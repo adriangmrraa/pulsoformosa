@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
+import { gotoHydrated, waitHydrated } from "./helpers";
 import { FIXTURE_REPORT_IDS } from "../fixtures/reports.fixture";
 
 test("deep link opens the detail sheet independently of active filters", async ({
   page,
 }) => {
-  await page.goto(
+  await gotoHydrated(
+    page,
     `/?reporte=${FIXTURE_REPORT_IDS[0]}&categoria=calles&periodo=30d`,
   );
 
@@ -19,7 +21,7 @@ test("deep link opens the detail sheet independently of active filters", async (
 });
 
 test("filter params apply from the URL and survive a reload", async ({ page }) => {
-  await page.goto("/?categoria=calles&periodo=30d");
+  await gotoHydrated(page, "/?categoria=calles&periodo=30d");
 
   await expect(
     page.getByRole("radio", { name: "Calles" }),
@@ -29,12 +31,13 @@ test("filter params apply from the URL and survive a reload", async ({ page }) =
   ).toHaveAttribute("aria-checked", "true");
 
   await page.reload();
+  await waitHydrated(page);
   await expect(page).toHaveURL(/categoria=calles/);
   await expect(page).toHaveURL(/periodo=30d/);
 });
 
 test("a card link roundtrips to the same shareable state", async ({ page }) => {
-  await page.goto("/?categoria=agua&periodo=30d");
+  await gotoHydrated(page, "/?categoria=agua&periodo=30d");
 
   const firstCardLink = page
     .locator("#lista-reportes a[href*='reporte=']")
@@ -45,7 +48,7 @@ test("a card link roundtrips to the same shareable state", async ({ page }) => {
   expect(href).toContain("periodo=30d");
   expect(href).toContain("reporte=");
 
-  await page.goto(href ?? "/");
+  await gotoHydrated(page, href ?? "/");
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page).toHaveURL(/categoria=agua/);
 });

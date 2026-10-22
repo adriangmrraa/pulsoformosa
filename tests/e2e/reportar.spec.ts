@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
+import { gotoHydrated } from "./helpers";
 
 const SNAPSHOTS = "test-results/snapshots";
 
@@ -25,7 +26,7 @@ test("denied geolocation falls back to manual entry and the fake submit confirms
     });
   });
 
-  await page.goto("/reportar");
+  await gotoHydrated(page, "/reportar");
 
   await page.getByRole("button", { name: "Usar mi ubicación" }).click();
   await expect(
@@ -66,12 +67,24 @@ test("the report page is reachable and captures a mobile snapshot", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/reportar");
+  await gotoHydrated(page, "/reportar");
   await expect(
     page.getByRole("heading", { name: "Reportar un problema" }),
   ).toBeVisible();
   await page.screenshot({
     path: `${SNAPSHOTS}/reportar-390x844.png`,
+    fullPage: true,
+  });
+});
+
+test("captures the desktop report snapshot", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await gotoHydrated(page, "/reportar");
+  await expect(
+    page.getByRole("heading", { name: "Reportar un problema" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: `${SNAPSHOTS}/reportar-1440x900.png`,
     fullPage: true,
   });
 });

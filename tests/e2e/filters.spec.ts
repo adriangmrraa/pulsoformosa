@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
+import { gotoHydrated, waitHydrated } from "./helpers";
 
 test("the category filter narrows the list to matching fixtures", async ({
   page,
 }) => {
-  await page.goto("/");
+  await gotoHydrated(page, "/");
   await page.getByRole("radio", { name: "Calles" }).click();
   await expect(page).toHaveURL(/categoria=calles/);
 
@@ -19,11 +20,12 @@ test("the category filter narrows the list to matching fixtures", async ({
 });
 
 test("the period filter persists across reloads", async ({ page }) => {
-  await page.goto("/");
+  await gotoHydrated(page, "/");
   await page.getByRole("radio", { name: "30 días" }).click();
   await expect(page).toHaveURL(/periodo=30d/);
 
   await page.reload();
+  await waitHydrated(page);
   await expect(page).toHaveURL(/periodo=30d/);
   await expect(
     page.getByRole("radio", { name: "30 días" }),
@@ -31,7 +33,7 @@ test("the period filter persists across reloads", async ({ page }) => {
 });
 
 test("the water category exposes the contextual subtype row", async ({ page }) => {
-  await page.goto("/");
+  await gotoHydrated(page, "/");
   await page.getByRole("radio", { name: "Agua" }).click();
   await expect(
     page.getByRole("radiogroup", { name: "Subtipo de agua" }),

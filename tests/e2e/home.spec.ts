@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
+import { gotoHydrated } from "./helpers";
 
 const SNAPSHOTS = "test-results/snapshots";
 
@@ -10,7 +11,7 @@ test.beforeAll(() => {
 test.describe("home", () => {
   test("traverses every section and shows the mock badge", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
+    await gotoHydrated(page, "/");
 
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Esto se está reportando en Formosa",
@@ -54,7 +55,7 @@ test.describe("home", () => {
 
   test("renders at mobile width without horizontal scroll", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
+    await gotoHydrated(page, "/");
 
     await page.screenshot({
       path: `${SNAPSHOTS}/home-390x844.png`,

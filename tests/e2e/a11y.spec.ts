@@ -1,11 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { gotoHydrated } from "./helpers";
 
 for (const route of ["/", "/reportar"]) {
   test(`axe finds no serious or critical violations on ${route}`, async ({
     page,
   }) => {
-    await page.goto(route);
+    await gotoHydrated(page, route);
 
     const results = await new AxeBuilder({ page }).analyze();
     const blocking = results.violations.filter(
@@ -24,7 +25,7 @@ for (const route of ["/", "/reportar"]) {
 }
 
 test("keyboard traversal leaves no focus trap", async ({ page }) => {
-  await page.goto("/reportar");
+  await gotoHydrated(page, "/reportar");
 
   for (let index = 0; index < 12; index += 1) {
     await page.keyboard.press("Tab");
