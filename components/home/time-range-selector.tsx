@@ -42,7 +42,7 @@ export function TimeRangeSelector({ value }: TimeRangeSelectorProps) {
             className={[
               "min-h-11 rounded-full border px-3.5 text-sm transition-ui",
               checked
-                ? "border-accent-lluvia bg-accent-lluvia text-foreground"
+                ? "border-accent-lluvia bg-accent-lluvia text-background"
                 : "border-border bg-surface text-text-secondary hover:bg-muted",
             ].join(" ")}
           >

@@ -57,7 +57,7 @@ export function SubmissionFeedback({ state, publicId }: SubmissionFeedbackProps)
           </p>
           <Link
             href="/"
-            className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-accent-agua px-4 text-sm font-semibold text-foreground transition-ui"
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-accent-agua px-4 text-sm font-semibold text-background transition-ui"
           >
             {CONFIRMATION_BACK}
           </Link>

@@ -257,9 +257,10 @@ export function ReportForm() {
         <div className="flex items-start gap-3">
           <Checkbox
             id="consent"
+            aria-label="Acepto las condiciones para publicar el reporte"
             checked={consent}
             onCheckedChange={(checked) => setConsent(Boolean(checked))}
-            aria-describedby="consent-error"
+            aria-describedby={errors.consent ? "consent-error" : undefined}
             aria-invalid={Boolean(errors.consent)}
           />
           <Label htmlFor="consent" className="text-sm leading-relaxed font-normal">
@@ -279,10 +280,7 @@ export function ReportForm() {
         </LegalInfoSheet>
       </div>
 
-      <div
-        aria-label="Protección anti-bots"
-        className="rounded-lg border border-dashed border-border bg-surface/40 p-3 text-xs text-text-secondary"
-      >
+      <div className="rounded-lg border border-dashed border-border bg-surface/40 p-3 text-xs text-text-secondary">
         {SUBMISSION_STUB_HINT}
       </div>
 
@@ -330,7 +328,7 @@ export function ReportForm() {
       <Button
         type="submit"
         disabled={submission === "submitting"}
-        className="min-h-11 w-full bg-accent-agua px-4 text-sm font-semibold text-foreground hover:bg-accent-agua/90"
+        className="min-h-11 w-full bg-accent-agua px-4 text-sm font-semibold text-background hover:bg-accent-agua/90"
       >
         {submission === "submitting" ? "Enviando…" : "Enviar reporte"}
       </Button>

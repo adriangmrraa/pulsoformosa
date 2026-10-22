@@ -131,7 +131,7 @@ export function LocationPicker({
               value={barrio}
               onChange={(event) => onBarrioChange?.(event.target.value)}
               placeholder="Ej.: Barrio San Martín, cerca de la plaza"
-              className="mt-1 min-h-11 w-full rounded-lg border border-border bg-base px-3 text-sm"
+              className="mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-sm"
             />
           </div>
 
@@ -147,7 +147,7 @@ export function LocationPicker({
                 value={latText}
                 onChange={(event) => setLatText(event.target.value)}
                 placeholder="-26.18"
-                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-base px-3 text-sm"
+                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-sm"
               />
             </div>
             <div>
@@ -161,7 +161,7 @@ export function LocationPicker({
                 value={lonText}
                 onChange={(event) => setLonText(event.target.value)}
                 placeholder="-58.18"
-                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-base px-3 text-sm"
+                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-sm"
               />
             </div>
           </div>
@@ -169,7 +169,7 @@ export function LocationPicker({
           <button
             type="button"
             onClick={confirmManual}
-            className="inline-flex min-h-11 items-center rounded-lg bg-accent-agua px-4 text-sm font-semibold text-foreground transition-ui"
+            className="inline-flex min-h-11 items-center rounded-lg bg-accent-agua px-4 text-sm font-semibold text-background transition-ui"
           >
             Confirmar ubicación
           </button>

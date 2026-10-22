@@ -74,7 +74,7 @@ export function FilterChips({ active, activeSubtype }: FilterChipsProps) {
               className={[
                 "min-h-11 rounded-full border px-4 text-sm font-medium transition-ui",
                 checked
-                  ? "border-accent-agua bg-accent-agua text-foreground"
+                  ? "border-accent-agua bg-accent-agua text-background"
                   : "border-border bg-surface text-text hover:bg-muted",
               ].join(" ")}
             >
@@ -102,7 +102,7 @@ export function FilterChips({ active, activeSubtype }: FilterChipsProps) {
                 className={[
                   "min-h-11 rounded-full border px-3 text-xs font-medium transition-ui",
                   checked
-                    ? "border-accent-lluvia bg-accent-lluvia text-foreground"
+                    ? "border-accent-lluvia bg-accent-lluvia text-background"
                     : "border-border bg-surface text-text-secondary hover:bg-muted",
                 ].join(" ")}
               >

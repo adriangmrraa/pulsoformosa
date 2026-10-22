@@ -35,7 +35,7 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
 
       <h3 className="mt-2 text-base font-semibold">
         <Link
-          href={`?reporte=${report.id}`}
+          href={sharePath}
           className="transition-ui hover:text-accent-agua"
         >
           {report.summary}

@@ -7,7 +7,7 @@ export function EmptyState() {
       <p className="text-sm text-text-secondary">{EMPTY_REPORTS}</p>
       <Link
         href="/reportar"
-        className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-accent-agua px-4 text-sm font-semibold text-foreground transition-ui"
+        className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-accent-agua px-4 text-sm font-semibold text-background transition-ui"
       >
         {REPORT_CTA}
       </Link>

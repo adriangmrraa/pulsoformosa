@@ -198,9 +198,9 @@ export default async function HomePage({
           <IncidentMap reports={reportPage.items} center={CENTER} />
         </div>
 
-        <section aria-labelledby="lista-reportes" className="mt-8">
+        <section id="lista-reportes" aria-labelledby="lista-reportes-title" className="mt-8">
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <h2 id="lista-reportes" className="text-2xl font-semibold tracking-tight">
+            <h2 id="lista-reportes-title" className="text-2xl font-semibold tracking-tight">
               Reportes recientes
             </h2>
             <TimeRangeSelector value={query.periodo} />

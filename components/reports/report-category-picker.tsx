@@ -80,7 +80,7 @@ export function ReportCategoryPicker({
                 className={[
                   "min-h-11 rounded-full border px-3 text-xs transition-ui",
                   checked
-                    ? "border-accent-lluvia bg-accent-lluvia text-foreground"
+                    ? "border-accent-lluvia bg-accent-lluvia text-background"
                     : "border-border bg-surface text-text-secondary hover:bg-muted",
                 ].join(" ")}
               >
