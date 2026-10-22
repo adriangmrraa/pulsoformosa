@@ -77,8 +77,8 @@ lint/typecheck/unit/e2e/CI harness.
 
 - `npm test` — 16 files / 90 tests green.
 - `npm run typecheck`, `npm run lint`, `npm run build` — green.
-- `npm run e2e` — 42 tests green across desktop-chromium, mobile-webkit and
-  mobile-chromium against a production build.
+- `npm run e2e` — 45 tests green across desktop-chromium, mobile-webkit and
+  mobile-chromium against a production build (gated on a hydration marker).
 - Axe: 0 serious/critical on both routes.
 - Route tree: `/`, `/reportar`, `/api/overview` only (plus framework
   `not-found`/icon).
