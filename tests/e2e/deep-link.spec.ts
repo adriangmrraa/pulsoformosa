@@ -15,6 +15,7 @@ test("deep link opens the detail sheet independently of active filters", async (
   await expect(dialog).toContainText("Agua acumulada sobre la calzada");
   await expect(dialog).toContainText("Reportado por un vecino — no verificado");
 
+  await dialog.focus();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(page).not.toHaveURL(/reporte=/);
