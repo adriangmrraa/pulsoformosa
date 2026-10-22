@@ -2,8 +2,9 @@ import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 export default defineConfig({
-  esbuild: {
-    jsx: "automatic",
+  // tsconfig keeps Next's "preserve" JSX mode; tests need the automatic runtime.
+  oxc: {
+    jsx: { runtime: "automatic" },
   },
   test: {
     environment: "jsdom",
