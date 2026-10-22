@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+/* §8.3 "agua nocturna" palette. Preliminary values — TODO(DA): verify contrast
+   against real WCAG ratios (§10.1) before launch. Dark-only in C1 (DEC-10). */
+@theme {
+  --color-base: #0b1520;
+  --color-surface: #111f2d;
+  --color-card: #17293a;
+  --color-text: #f4f7fa;
+  --color-text-secondary: #b9cad8;
+  --color-accent-agua: #45c6cc;
+  --color-accent-lluvia: #7bb7f0;
+  --color-alerta-moderada: #f4b25f;
+  --color-alerta-alta: #e76b6b;
+  --color-exito: #67c5a8;
+
+  /* Semantic aliases consumed by the generated primitives. They map back to
+     the §8.3 palette; do not introduce a second color system. */
+  --color-background: #0b1520;
+  --color-foreground: #f4f7fa;
+  --color-card-foreground: #f4f7fa;
+  --color-popover: #17293a;
+  --color-popover-foreground: #f4f7fa;
+  --color-primary: #45c6cc;
+  --color-primary-foreground: #0b1520;
+  --color-secondary: #17293a;
+  --color-secondary-foreground: #f4f7fa;
+  --color-muted: #111f2d;
+  --color-muted-foreground: #b9cad8;
+  --color-accent: #7bb7f0;
+  --color-accent-foreground: #0b1520;
+  --color-destructive: #e76b6b;
+  --color-destructive-foreground: #0b1520;
+  --color-border: #2a4054;
+  --color-input: #2a4054;
+  --color-ring: #7bb7f0;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  min-height: 100dvh;
+}
+
+::selection {
+  background-color: var(--color-accent-agua);
+  color: var(--color-base);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-lluvia);
+  outline-offset: 2px;
+}
+
+.container-page {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-page {
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-page {
+    padding-inline: 2rem;
+  }
+}
+
+.pb-safe {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* §8.8 — orienting transitions only, 150–220 ms. */
+.transition-ui {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 180ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
