@@ -79,6 +79,9 @@ export const OUTSIDE_REGION_ERROR =
 export const DESCRIPTION_WARNING =
   "No escribas nombres ni teléfonos de otras personas.";
 
+export const SUBMISSION_STUB_HINT =
+  "Protección anti-bots: espacio reservado. En esta versión no se verifica ni bloquea el teclado.";
+
 export const CATEGORY_LABEL_BY_SLUG: Record<CategorySlug, string> = {
   todos: "Todos",
   agua: "Agua",
