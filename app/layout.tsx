@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/ui/site-header";
 import { Footer } from "@/components/ui/footer";
+import { HydrationMarker } from "@/components/ui/hydration-marker";
 import {
   APP_BASE_URL,
   REGION,
@@ -37,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="es-AR" className={inter.variable}>
       <body className="flex min-h-dvh flex-col antialiased">
+        <HydrationMarker />
         <a
           href="#contenido"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:text-text"
