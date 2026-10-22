@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ReportForm } from "@/components/reports/report-form";
 import { REPORT_FORM_TITLE } from "@/lib/domain/microcopy";
 import { SITE_NAME } from "@/lib/site";
+import { HydrationMarker } from "@/components/ui/hydration-marker";
 
 export const metadata: Metadata = {
   title: `Reportar un problema — ${SITE_NAME}`,
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export default function ReportarPage() {
   return (
     <div className="container-page py-6 md:py-10">
+      <HydrationMarker />
       <div className="max-w-2xl">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           {REPORT_FORM_TITLE}

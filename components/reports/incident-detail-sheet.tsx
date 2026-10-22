@@ -11,6 +11,7 @@ import {
   REPORT_PENDING_LINE,
 } from "@/lib/domain/microcopy";
 import { formatAbsoluteART } from "@/lib/domain/time";
+import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import {
   Dialog,
   DialogContent,
@@ -66,6 +67,7 @@ export function IncidentDetailSheet({
             <DialogDescription>
               {EDITORIAL_LABELS[report.editorial_status]}
             </DialogDescription>
+            <DevMockBadge />
           </DialogHeader>
 
           {report.editorial_status === "PENDING_REVIEW" ? (

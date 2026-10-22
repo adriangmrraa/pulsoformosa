@@ -28,6 +28,9 @@ describe("IncidentDetailSheet", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Enviado:/)).toBeInTheDocument();
     expect(screen.getByText(/Punto aproximado/)).toBeInTheDocument();
+    expect(
+      screen.getByText("Dato de prueba — mock de desarrollo"),
+    ).toBeInTheDocument();
   });
 
   it("shows the verified label for an editorially verified report", () => {

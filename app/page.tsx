@@ -30,6 +30,7 @@ import { IncidentDetailSheet } from "@/components/reports/incident-detail-sheet"
 import { Pagination } from "@/components/home/pagination";
 import { EmptyState } from "@/components/home/empty-state";
 import { ReportCTA } from "@/components/home/report-cta";
+import { HydrationMarker } from "@/components/ui/hydration-marker";
 
 export const dynamic = "force-dynamic";
 
@@ -168,6 +169,7 @@ export default async function HomePage({
 
   return (
     <>
+      <HydrationMarker />
       <div className="container-page py-6 md:py-10">
         <div className="max-w-3xl">
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
