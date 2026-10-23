@@ -180,7 +180,7 @@ export default async function HomePage({
   return (
     <>
       <HydrationMarker />
-      <div className="container-page py-6 md:py-10">
+      <div className="container-page py-6 pb-28 md:py-10">
         <div className="max-w-3xl">
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Esto se está reportando en Formosa
@@ -211,7 +211,7 @@ export default async function HomePage({
         </div>
 
         <section id="lista-reportes" aria-labelledby="lista-reportes-title" className="mt-8">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
             <h2 id="lista-reportes-title" className="text-2xl font-semibold tracking-tight">
               Reportes recientes
             </h2>

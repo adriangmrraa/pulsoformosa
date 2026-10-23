@@ -17,7 +17,7 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
   const verified = report.editorial_status === "VERIFIED_EDITORIALLY";
 
   return (
-    <article className="rounded-xl border border-border/60 bg-card p-4">
+    <article className="rounded-xl border border-border/60 bg-card p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-text-secondary">
           {CATEGORY_LABELS[report.category]}
@@ -34,7 +34,7 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
         {fixture ? <DevMockBadge /> : null}
       </div>
 
-      <h3 className="mt-2 text-base font-semibold">
+      <h3 className="mt-3 text-base font-semibold leading-snug">
         <Link
           href={sharePath}
           className="transition-ui hover:text-accent-agua"
@@ -51,8 +51,12 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
       <p className="mt-2 text-xs text-text-secondary">
         <time dateTime={report.published_at} title={formatAbsoluteART(report.published_at)}>
           {formatRelativeAge(report.published_at)}
-        </time>{" "}
-        · <span className="tabular">{formatAbsoluteART(report.published_at)}</span>
+        </time>
+        <span aria-hidden="true"> · </span>
+        <span className="hidden tabular sm:inline">
+          {formatAbsoluteART(report.published_at)}
+        </span>
+        <span className="sr-only">({formatAbsoluteART(report.published_at)})</span>
       </p>
 
       <div className="mt-3 rounded-lg border border-dashed border-border bg-surface/50 p-3 text-[13px] text-text-secondary">

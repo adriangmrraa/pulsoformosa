@@ -12,9 +12,9 @@ export function SiteHeader({ title, region }: SiteHeaderProps) {
   return (
     <header
       aria-label={region}
-      className="border-b border-border/60 bg-surface/80 backdrop-blur"
+      className="sticky top-0 z-30 border-b border-border/60 bg-surface/90 shadow-sm backdrop-blur"
     >
-      <div className="container-page flex flex-wrap items-center justify-between gap-3 py-3">
+      <div className="container-page flex items-center justify-between gap-3 py-3">
         <div className="flex flex-col">
           <Link
             href="/"

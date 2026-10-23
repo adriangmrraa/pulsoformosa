@@ -67,7 +67,7 @@ export function FilterChips({ active, activeSubtype }: FilterChipsProps) {
         ref={groupRef}
         role="radiogroup"
         aria-label="Categoría"
-        className="flex flex-wrap gap-2"
+        className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1"
         onKeyDown={handleArrowKeys}
       >
         {CATEGORY_SLUG_LIST.map((slug) => {
@@ -80,7 +80,7 @@ export function FilterChips({ active, activeSubtype }: FilterChipsProps) {
               aria-checked={checked}
               onClick={() => selectCategory(slug)}
               className={[
-                "min-h-11 rounded-full border px-4 text-sm font-medium transition-ui",
+                "min-h-11 shrink-0 snap-start rounded-full border px-4 text-sm font-medium transition-ui",
                 checked
                   ? "border-accent-agua bg-accent-agua text-background"
                   : "border-border bg-surface text-text hover:bg-muted",
