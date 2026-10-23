@@ -17,13 +17,11 @@ export function FilterChips({ active, activeSubtype }: FilterChipsProps) {
   const searchParams = useSearchParams();
   const groupRef = useRef<HTMLDivElement>(null);
 
-  function updateParam(key: string, value: string | null) {
+  function navigate(mutate: (params: URLSearchParams) => void) {
+    // One snapshot, one mutation pass, one navigation. Two sequential updates
+    // would both start from the same snapshot and re-add the other's removal.
     const params = new URLSearchParams(searchParams.toString());
-    if (value === null) {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
+    mutate(params);
     params.delete("cursor");
     params.delete("reporte");
     const query = params.toString();
@@ -31,10 +29,20 @@ export function FilterChips({ active, activeSubtype }: FilterChipsProps) {
   }
 
   function selectCategory(slug: CategorySlug) {
-    if (slug !== "agua") {
-      updateParam("subtipo", null);
-    }
-    updateParam("categoria", slug === "todos" ? null : slug);
+    navigate((params) => {
+      if (slug === "todos") {
+        params.delete("categoria");
+      } else {
+        params.set("categoria", slug);
+      }
+      if (slug !== "agua") {
+        params.delete("subtipo");
+      }
+    });
+  }
+
+  function selectSubtype(subtype: string) {
+    navigate((params) => params.set("subtipo", subtype));
   }
 
   function handleArrowKeys(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -98,9 +106,9 @@ export function FilterChips({ active, activeSubtype }: FilterChipsProps) {
                 type="button"
                 role="radio"
                 aria-checked={checked}
-                onClick={() => updateParam("subtipo", subtype)}
+                onClick={() => selectSubtype(subtype)}
                 className={[
-                  "min-h-11 rounded-full border px-3 text-xs font-medium transition-ui",
+                  "min-h-11 rounded-full border px-3 text-[13px] font-medium transition-ui",
                   checked
                     ? "border-accent-lluvia bg-accent-lluvia text-background"
                     : "border-border bg-surface text-text-secondary hover:bg-muted",

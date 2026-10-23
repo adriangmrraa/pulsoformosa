@@ -4,16 +4,18 @@ import { FilterChips } from "@/components/home/filter-chips";
 import { TimeRangeSelector } from "@/components/home/time-range-selector";
 
 const replaceMock = vi.hoisted(() => vi.fn());
+const searchState = vi.hoisted(() => ({ value: "zona=norte" }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: replaceMock }),
   usePathname: () => "/",
-  useSearchParams: () => new URLSearchParams("zona=norte"),
+  useSearchParams: () => new URLSearchParams(searchState.value),
 }));
 
 describe("FilterChips", () => {
   beforeEach(() => {
     replaceMock.mockClear();
+    searchState.value = "zona=norte";
   });
 
   it("writes the category slug to the query string", () => {
@@ -42,6 +44,14 @@ describe("FilterChips", () => {
     ).toBeNull();
   });
 
+  it("clears the subtype when switching from Agua+subtype to Calles in one navigation", () => {
+    searchState.value = "categoria=agua&subtipo=calle+anegada";
+    render(<FilterChips active="agua" activeSubtype="calle anegada" />);
+    fireEvent.click(screen.getByRole("radio", { name: "Calles" }));
+    expect(replaceMock).toHaveBeenCalledTimes(1);
+    expect(replaceMock).toHaveBeenCalledWith("/?categoria=calles", { scroll: false });
+  });
+
   it("writes the subtype when a subtype chip is selected", () => {
     render(<FilterChips active="agua" />);
     fireEvent.click(
@@ -66,6 +76,7 @@ describe("FilterChips", () => {
 describe("TimeRangeSelector", () => {
   beforeEach(() => {
     replaceMock.mockClear();
+    searchState.value = "zona=norte";
   });
 
   it("writes the period to the query string", () => {
