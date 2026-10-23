@@ -18,9 +18,14 @@ import {
   GEOMETRY_STREET,
   LOCATION_MARKED_BY_YOU,
   SUBMISSION_STUB_HINT,
+  TURNSTILE_CONFIGURED,
+  TURNSTILE_NOT_CONFIGURED,
 } from "@/lib/domain/microcopy";
 import { formatAbsoluteART } from "@/lib/domain/time";
-import { reportFormSchema } from "@/lib/validation/report-form";
+import {
+  reportFormSchema,
+  type ReportFormInput,
+} from "@/lib/validation/report-form";
 import { ReportCategoryPicker } from "./report-category-picker";
 import { LocationPicker, type PickedLocation } from "./location-picker";
 import { ImageUploader } from "./image-uploader";
@@ -49,6 +54,13 @@ const EMPTY_DRAFT: Draft = {
   barrio: "",
 };
 
+async function fakeSubmit(
+  payload: ReportFormInput,
+): Promise<{ publicId: string }> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  return { publicId: `pub_mock_${payload.idempotency_key.slice(0, 8)}` };
+}
+
 function newKey(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -65,7 +77,11 @@ export function ReportForm() {
   const [submission, setSubmission] = useState<SubmissionState>("idle");
   const [publicId, setPublicId] = useState<string | undefined>(undefined);
   const [reportTime, setReportTime] = useState<string | null>(null);
+  const [accuracyM, setAccuracyM] = useState<number | undefined>(undefined);
+  const [photoError, setPhotoError] = useState<string | undefined>(undefined);
   const restoredRef = useRef(false);
+  const idempotencyRef = useRef<string | null>(null);
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
     // sessionStorage is an external store; read it after mount so SSR and the
@@ -118,32 +134,36 @@ export function ReportForm() {
       next.consent = "Necesitamos tu consentimiento para publicar el reporte.";
     }
 
-    if (Object.keys(next).length === 0 && draft.category && draft.location) {
-      const candidate = {
-        category: draft.category,
-        subtype: draft.subtype ?? undefined,
-        description: draft.description,
-        location: {
-          lat: draft.location.lat,
-          lon: draft.location.lon,
-          method: draft.method ?? "manual_pin",
-        },
-        geometry_mode: geometryMode,
-        consent: true as const,
-        idempotency_key: newKey(),
-      };
-      const parsed = reportFormSchema.safeParse(candidate);
-      if (!parsed.success) {
-        next.form = "Revisá los datos marcados antes de enviar.";
-      }
-    }
-
     return next;
+  }
+
+  function buildPayload(): ReportFormInput | null {
+    if (!draft.category || !draft.location) return null;
+
+    const key = idempotencyRef.current ?? newKey();
+    idempotencyRef.current = key;
+
+    const parsed = reportFormSchema.safeParse({
+      category: draft.category,
+      subtype: draft.subtype ?? undefined,
+      description: draft.description,
+      location: {
+        lat: draft.location.lat,
+        lon: draft.location.lon,
+        method: draft.method ?? "manual_pin",
+        accuracyM,
+      },
+      geometry_mode: geometryMode,
+      consent: true as const,
+      idempotency_key: key,
+    });
+
+    return parsed.success ? parsed.data : null;
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submission === "submitting") return;
+    if (submission === "submitting" || submission === "received") return;
 
     const nextErrors = validate();
     setErrors(nextErrors);
@@ -151,11 +171,18 @@ export function ReportForm() {
       return;
     }
 
-    setSubmission("submitting");
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    const payload = buildPayload();
+    if (!payload) {
+      setErrors({ form: "Revisá los datos marcados antes de enviar." });
+      return;
+    }
 
-    // Fake submit: nothing persists and the fixture list never gains the report.
-    setPublicId(`pub_mock_${newKey().slice(0, 8)}`);
+    setSubmission("submitting");
+
+    // Fake transport: the payload (including idempotency_key) is built and
+    // passed, but nothing persists and the fixture list never gains the report.
+    const result = await fakeSubmit(payload);
+    setPublicId(result.publicId);
     setSubmission("received");
     try {
       sessionStorage.removeItem(DRAFT_KEY);
@@ -207,11 +234,20 @@ export function ReportForm() {
         method={draft.method}
         barrio={draft.barrio}
         onBarrioChange={(barrio) => update({ barrio })}
-        onChange={(location, method) => update({ location, method })}
+        onChange={(location, method, nextAccuracy) => {
+          update({ location, method });
+          setAccuracyM(nextAccuracy);
+        }}
+        accuracyM={accuracyM}
         error={errors.location}
       />
 
-      <ImageUploader files={files} onChange={setFiles} />
+      <ImageUploader
+        files={files}
+        onChange={setFiles}
+        error={photoError}
+        onError={setPhotoError}
+      />
 
       <details className="rounded-lg border border-border bg-surface/60 p-3">
         <summary className="min-h-11 cursor-pointer text-sm font-medium">
@@ -280,8 +316,13 @@ export function ReportForm() {
         </LegalInfoSheet>
       </div>
 
-      <div className="rounded-lg border border-dashed border-border bg-surface/40 p-3 text-xs text-text-secondary">
-        {SUBMISSION_STUB_HINT}
+      <div className="rounded-lg border border-dashed border-border bg-surface/40 p-3 text-[13px] text-text-secondary">
+        <p>{SUBMISSION_STUB_HINT}</p>
+        <p className="mt-1">
+          {turnstileSiteKey
+            ? TURNSTILE_CONFIGURED
+            : TURNSTILE_NOT_CONFIGURED}
+        </p>
       </div>
 
       {draft.location ? (
@@ -302,6 +343,12 @@ export function ReportForm() {
             <div>
               <dt className="inline font-medium">Barrio o referencia: </dt>
               <dd className="inline">{draft.barrio || "sin indicar"}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium">Precisión: </dt>
+              <dd className="inline">
+                {accuracyM ? `±${Math.round(accuracyM)} m` : "sin dato de GPS"}
+              </dd>
             </div>
             <div>
               <dt className="inline font-medium">Hora del reporte: </dt>
@@ -327,10 +374,14 @@ export function ReportForm() {
 
       <Button
         type="submit"
-        disabled={submission === "submitting"}
+        disabled={submission === "submitting" || submission === "received"}
         className="min-h-11 w-full bg-accent-agua px-4 text-sm font-semibold text-background hover:bg-accent-agua/90"
       >
-        {submission === "submitting" ? "Enviando…" : "Enviar reporte"}
+        {submission === "submitting"
+          ? "Enviando…"
+          : submission === "received"
+            ? "Reporte enviado"
+            : "Enviar reporte"}
       </Button>
 
       <SubmissionFeedback state={submission} publicId={publicId} />

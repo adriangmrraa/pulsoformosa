@@ -3,7 +3,11 @@
 import { useState } from "react";
 import type { LocationMethod } from "@/lib/domain/taxonomy";
 import { isInsideFormosaBBox } from "@/lib/domain/geo";
-import { GPS_DENIED, OUTSIDE_REGION_ERROR } from "@/lib/domain/microcopy";
+import {
+  GPS_DENIED,
+  MAP_PENDING_NOTE,
+  OUTSIDE_REGION_ERROR,
+} from "@/lib/domain/microcopy";
 
 export interface PickedLocation {
   lat: number;
@@ -14,7 +18,11 @@ interface LocationPickerProps {
   value: PickedLocation | null;
   method: LocationMethod | null;
   accuracyM?: number;
-  onChange: (location: PickedLocation, method: LocationMethod, accuracyM?: number) => void;
+  onChange: (
+    location: PickedLocation,
+    method: LocationMethod,
+    accuracyM?: number,
+  ) => void;
   onBarrioChange?: (barrio: string) => void;
   barrio?: string;
   error?: string;
@@ -31,11 +39,15 @@ export function LocationPicker({
 }: LocationPickerProps) {
   const [denied, setDenied] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
-  const [latText, setLatText] = useState(value ? String(value.lat) : "");
-  const [lonText, setLonText] = useState(value ? String(value.lon) : "");
+  const [latText, setLatText] = useState<string | null>(null);
+  const [lonText, setLonText] = useState<string | null>(null);
   const [outside, setOutside] = useState(false);
 
   const errorId = "location-error";
+  // Derived display: a restored draft (value set after mount) shows up without
+  // an effect, and manual typing takes precedence once touched.
+  const displayLat = latText ?? (value ? String(value.lat) : "");
+  const displayLon = lonText ?? (value ? String(value.lon) : "");
 
   function requestGps() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -69,8 +81,8 @@ export function LocationPicker({
   }
 
   function confirmManual() {
-    const lat = Number(latText.replace(",", "."));
-    const lon = Number(lonText.replace(",", "."));
+    const lat = Number(displayLat.replace(",", "."));
+    const lon = Number(displayLon.replace(",", "."));
 
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
       setOutside(true);
@@ -100,6 +112,13 @@ export function LocationPicker({
         <button
           type="button"
           onClick={() => setManualOpen(true)}
+          className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-4 text-sm font-medium transition-ui hover:bg-muted"
+        >
+          Marcar en mapa
+        </button>
+        <button
+          type="button"
+          onClick={() => setManualOpen(true)}
           className="inline-flex min-h-11 items-center rounded-lg border border-border bg-surface px-4 text-left text-sm font-medium transition-ui hover:bg-muted"
         >
           No compartir mi ubicación actual; seleccionar otro lugar
@@ -107,21 +126,29 @@ export function LocationPicker({
       </div>
 
       {accuracyM ? (
-        <p className="text-xs text-text-secondary">
+        <p className="text-[13px] text-text-secondary">
           Precisión aproximada del GPS: ±{Math.round(accuracyM)} m
         </p>
       ) : null}
 
       {denied ? (
-        <p role="status" className="text-xs text-alerta-moderada">
+        <p role="status" className="text-[13px] text-alerta-moderada">
           {GPS_DENIED}
+        </p>
+      ) : null}
+
+      {outside ? (
+        <p role="alert" className="text-[13px] text-alerta-alta">
+          {OUTSIDE_REGION_ERROR}
         </p>
       ) : null}
 
       {manualOpen ? (
         <div className="space-y-2 rounded-lg border border-border bg-surface/60 p-3">
+          <p className="text-[13px] text-text-secondary">{MAP_PENDING_NOTE}</p>
+
           <div>
-            <label htmlFor="barrio" className="text-xs font-medium">
+            <label htmlFor="barrio" className="text-[13px] font-medium">
               Barrio o referencia
             </label>
             <input
@@ -131,37 +158,37 @@ export function LocationPicker({
               value={barrio}
               onChange={(event) => onBarrioChange?.(event.target.value)}
               placeholder="Ej.: Barrio San Martín, cerca de la plaza"
-              className="mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-sm"
+              className="mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-[15px]"
             />
           </div>
 
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
-              <label htmlFor="latitud" className="text-xs font-medium">
+              <label htmlFor="latitud" className="text-[13px] font-medium">
                 Latitud
               </label>
               <input
                 id="latitud"
                 name="latitud"
                 inputMode="decimal"
-                value={latText}
+                value={displayLat}
                 onChange={(event) => setLatText(event.target.value)}
                 placeholder="-26.18"
-                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-sm"
+                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-[15px]"
               />
             </div>
             <div>
-              <label htmlFor="longitud" className="text-xs font-medium">
+              <label htmlFor="longitud" className="text-[13px] font-medium">
                 Longitud
               </label>
               <input
                 id="longitud"
                 name="longitud"
                 inputMode="decimal"
-                value={lonText}
+                value={displayLon}
                 onChange={(event) => setLonText(event.target.value)}
                 placeholder="-58.18"
-                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-sm"
+                className="tabular mt-1 min-h-11 w-full rounded-lg border border-border bg-navy px-3 text-[15px]"
               />
             </div>
           </div>
@@ -173,24 +200,18 @@ export function LocationPicker({
           >
             Confirmar ubicación
           </button>
-
-          {outside ? (
-            <p role="alert" className="text-xs text-alerta-alta">
-              {OUTSIDE_REGION_ERROR}
-            </p>
-          ) : null}
         </div>
       ) : null}
 
       {value && !outside ? (
-        <p className="tabular text-xs text-text-secondary">
+        <p className="tabular text-[13px] text-text-secondary">
           Ubicación marcada: {value.lat.toFixed(5)}, {value.lon.toFixed(5)}
           {method === "gps" ? " · GPS" : " · manual"}
         </p>
       ) : null}
 
       {error ? (
-        <p id={errorId} className="text-xs text-alerta-alta">
+        <p id={errorId} className="text-[13px] text-alerta-alta">
           {error}
         </p>
       ) : null}

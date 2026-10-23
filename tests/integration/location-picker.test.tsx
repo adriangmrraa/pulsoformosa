@@ -89,3 +89,51 @@ describe("LocationPicker", () => {
     );
   });
 });
+
+describe("LocationPicker GPS and map affordance", () => {
+  it("exposes the manual map affordance without WebGL", () => {
+    render(<LocationPicker value={null} method={null} onChange={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Marcar en mapa" }));
+    expect(screen.getByLabelText("Latitud")).toBeInTheDocument();
+  });
+
+  it("shows the outside-region error for an out-of-bbox GPS fix", () => {
+    getCurrentPosition.mockImplementation((ok) => {
+      ok({ coords: { latitude: -34.6, longitude: -58.4, accuracy: 10 } });
+    });
+
+    render(<LocationPicker value={null} method={null} onChange={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Usar mi ubicación" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(OUTSIDE_REGION_ERROR);
+    expect(screen.queryByLabelText("Latitud")).toBeNull();
+  });
+
+  it("passes GPS accuracy through and displays it", () => {
+    const onChange = vi.fn();
+    getCurrentPosition.mockImplementation((ok) => {
+      ok({ coords: { latitude: -26.18, longitude: -58.18, accuracy: 25 } });
+    });
+
+    const { rerender } = render(
+      <LocationPicker value={null} method={null} onChange={onChange} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Usar mi ubicación" }));
+
+    expect(onChange).toHaveBeenCalledWith(
+      { lat: -26.18, lon: -58.18 },
+      "gps",
+      25,
+    );
+
+    rerender(
+      <LocationPicker
+        value={{ lat: -26.18, lon: -58.18 }}
+        method="gps"
+        accuracyM={25}
+        onChange={onChange}
+      />,
+    );
+    expect(screen.getByText(/Precisión aproximada del GPS: ±25 m/)).toBeInTheDocument();
+  });
+});

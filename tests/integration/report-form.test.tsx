@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ReportForm } from "@/components/reports/report-form";
+import { ImageUploader } from "@/components/reports/image-uploader";
 import {
   CONFIRMATION_DISCLAIMER,
   CONFIRMATION_STATUS,
@@ -10,6 +11,7 @@ import {
 beforeEach(() => {
   sessionStorage.clear();
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 function pickCategory(name = "Agua y anegamientos") {
@@ -85,6 +87,22 @@ describe("ReportForm validation", () => {
     expect(screen.getByLabelText(/Una zona aproximada/)).toBeDisabled();
   });
 
+  it("reads the Turnstile site-key presence without verifying anything", () => {
+    const { unmount } = render(<ReportForm />);
+    expect(
+      screen.getByText("Protección anti-bots no configurada en este entorno."),
+    ).toBeInTheDocument();
+    unmount();
+
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "site-key-test");
+    render(<ReportForm />);
+    expect(
+      screen.getByText(
+        "Espacio reservado para la verificación anti-bots (configurado).",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("does not ask for name, DNI, email or phone", () => {
     render(<ReportForm />);
     expect(screen.queryByLabelText(/nombre/i)).toBeNull();
@@ -115,6 +133,22 @@ describe("ReportForm fake submit", () => {
     ).toBeInTheDocument();
   });
 
+  it("keeps the idempotency key in the submit payload", async () => {
+    const key = "12345678-1234-4123-8123-123456789012";
+    vi.spyOn(crypto, "randomUUID").mockReturnValue(key);
+
+    render(<ReportForm />);
+    pickCategory();
+    setDescription("Agua acumulada sobre la calle desde anoche.");
+    setManualLocation();
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Enviar reporte" }));
+
+    expect(
+      await screen.findByText(/pub_mock_12345678/, {}, { timeout: 3000 }),
+    ).toBeInTheDocument();
+  });
+
   it("guards against double submits", async () => {
     render(<ReportForm />);
     pickCategory();
@@ -127,6 +161,9 @@ describe("ReportForm fake submit", () => {
 
     expect(submit).toBeDisabled();
     await screen.findByText(CONFIRMATION_TITLE, {}, { timeout: 3000 });
+    expect(
+      screen.getByRole("button", { name: "Reporte enviado" }),
+    ).toBeDisabled();
   });
 
   it("restores a draft from tab memory", async () => {
@@ -152,5 +189,49 @@ describe("ReportForm fake submit", () => {
     expect(
       screen.getByRole("radio", { name: "Calles y rutas" }),
     ).toHaveAttribute("aria-checked", "true");
+  });
+});
+
+describe("ImageUploader", () => {
+  it("explains rejected file types instead of dropping them", () => {
+    render(<ImageUploader files={[]} onChange={vi.fn()} />);
+    const input = screen.getByLabelText("Elegir fotos del reporte") as HTMLInputElement;
+    Object.defineProperty(input, "files", {
+      configurable: true,
+      value: [new File(["x"], "nota.txt", { type: "text/plain" })],
+    });
+    fireEvent.change(input);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Algunos archivos no son JPEG, PNG o HEIC",
+    );
+  });
+
+  it("explains the three-photo limit", () => {
+    render(<ImageUploader files={[]} onChange={vi.fn()} />);
+    const files = [1, 2, 3, 4].map(
+      (index) => new File(["x"], `foto-${index}.png`, { type: "image/png" }),
+    );
+    const input = screen.getByLabelText("Elegir fotos del reporte") as HTMLInputElement;
+    Object.defineProperty(input, "files", { configurable: true, value: files });
+    fireEvent.change(input);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Podés adjuntar hasta 3 fotos.",
+    );
+  });
+
+  it("renders the uploading state", () => {
+    render(<ImageUploader files={[]} onChange={vi.fn()} uploading />);
+    expect(screen.getByRole("status")).toHaveTextContent("Subiendo fotos…");
+  });
+
+  it("surfaces uploader errors back through the form", () => {
+    render(<ReportForm />);
+    const input = screen.getByLabelText("Elegir fotos del reporte") as HTMLInputElement;
+    Object.defineProperty(input, "files", {
+      configurable: true,
+      value: [new File(["x"], "nota.txt", { type: "text/plain" })],
+    });
+    fireEvent.change(input);
+    expect(screen.getByText(/Algunos archivos no son JPEG/)).toBeInTheDocument();
   });
 });
