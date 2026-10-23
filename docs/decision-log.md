@@ -84,3 +84,24 @@ lint/typecheck/unit/e2e/CI harness.
   `not-found`/icon).
 - No MapLibre, PMTiles or tile imports.
 - No secrets tracked; `.env.local` stays ignored.
+
+## Repair round 2 (verify warnings)
+
+All 12 warnings from the independent verify report are closed:
+
+- **W-01** `next` and `eslint-config-next` bumped to `16.4.2`; `npm audit --omit=dev` now reports 0 vulnerabilities.
+- **W-02** `FilterChips` mutates one `URLSearchParams` snapshot and navigates once; regression test covers agua+subtipo → calles.
+- **W-03** Partial states render a visible “Información parcial” notice with the missing fields; `ImageUploader` has an `uploading` state; tests cover partial, offline and uploading.
+- **W-04** Freshness windows are wired (`isStaleFor`): past-window ENSO/forecast/river values are hidden and “Esperando actualización” is shown.
+- **W-05** The mock provider returns public-only reports (`PUBLISHED_UNVERIFIED`/`VERIFIED_EDITORIALLY`); hidden/rejected detail links render only “No disponible”, pending links only “Reporte en revisión”, with no content leakage.
+- **W-06** The self-fetch origin comes from configured `APP_BASE_URL` (validated http/https), never from request headers; unit tests cover malformed, non-http and production-missing cases.
+- **W-07** Canonicals are per page (`/`, `/reportar`); `APP_BASE_URL` is required when `PUBLIC_ENVIRONMENT_LABEL=production`.
+- **W-08** GPS accuracy is passed to the form and displayed; out-of-region GPS errors render outside the manual panel; a “Marcar en mapa” affordance opens the WebGL-free manual path.
+- **W-09** The submit payload keeps the generated `idempotency_key` (the fake id derives from it); the inert Turnstile slot reports whether `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is configured.
+- **W-10** The uploader explains rejected type/size/count reasons, propagates errors to the form, and has an uploading visual.
+- **W-11** Body text is 15 px and metadata 13 px via theme tokens; display icons are 18–24 px; dialog close is a 44 px target and checkbox/radio pseudo-hit-areas reach 44 px; an e2e target-size audit covers buttons, radios and summaries.
+- **W-12** `/api/overview` parses request filters and derives community stats from the same category/period/zone as the list; page self-fetch forwards the active query.
+
+Best-effort suggestions applied: draft-restored coordinates display (S-02), sticky received state (S-03), JSX comment corrected (S-04), `NEXT_PUBLIC_APP_BASE_URL` removed/docs updated and the C2 schema target documented (S-05), 1280 px snapshot + `?zona=` e2e (S-06), inert mock source links (S-07), duplicate screen-reader region removed (S-08). S-01 is partially addressed (UpdatedAt is now consumed); unused primitives remain generated for C2/C5, and S-09 is a commit-history observation.
+
+Documented deferral: the interactive map itself (including “Marcar en mapa” pin-dragging) remains C1B-b; the C1 button opens an honest WebGL-free manual-coordinate path.

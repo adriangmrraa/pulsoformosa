@@ -23,6 +23,10 @@ npm ci
 Copy `.env.example` to `.env.local` and fill only what you need. The app runs
 without any secret: `PUBLIC_ENVIRONMENT_LABEL=development` is enough.
 
+`APP_BASE_URL` is the canonical origin used for metadata and internal reads. It
+is required when `PUBLIC_ENVIRONMENT_LABEL=production`; development falls back
+to `http://127.0.0.1:3000`.
+
 ## Commands
 
 | Command | What it does |
