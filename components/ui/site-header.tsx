@@ -10,7 +10,10 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ title, region }: SiteHeaderProps) {
   return (
-    <header className="border-b border-border/60 bg-surface/80 backdrop-blur">
+    <header
+      aria-label={region}
+      className="border-b border-border/60 bg-surface/80 backdrop-blur"
+    >
       <div className="container-page flex flex-wrap items-center justify-between gap-3 py-3">
         <div className="flex flex-col">
           <Link
@@ -22,7 +25,6 @@ export function SiteHeader({ title, region }: SiteHeaderProps) {
           <RegionLabel city={REGION.city} province={REGION.province} />
         </div>
         <nav aria-label="Navegación principal" className="flex items-center gap-3">
-          <span className="sr-only">{region}</span>
           <ReportCTA />
         </nav>
       </div>

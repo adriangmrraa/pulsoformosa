@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 export default defineConfig({
-  // tsconfig keeps Next's "preserve" JSX mode; tests need the automatic runtime.
+  // tsconfig uses Next's react-jsx runtime; keep tests on the same transform.
   oxc: {
     jsx: { runtime: "automatic" },
   },

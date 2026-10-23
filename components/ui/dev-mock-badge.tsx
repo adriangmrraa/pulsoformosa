@@ -20,7 +20,7 @@ export function DevMockBadge({ label = MOCK_BADGE, className }: DevMockBadgeProp
         .filter(Boolean)
         .join(" ")}
     >
-      <FlaskConical aria-hidden="true" className="size-3.5" />
+      <FlaskConical aria-hidden="true" className="size-[18px]" />
       <span>{label}</span>
     </span>
   );

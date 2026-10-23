@@ -5,6 +5,7 @@ import { NO_PHOTO } from "@/lib/domain/microcopy";
 import { formatAbsoluteART, formatRelativeAge } from "@/lib/domain/time";
 import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import { ShareCopyButton } from "./share-copy-button";
+import { UpdatedAt } from "./updated-at";
 
 interface IncidentCardProps {
   report: PublicReportCard;
@@ -54,8 +55,12 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
         · <span className="tabular">{formatAbsoluteART(report.published_at)}</span>
       </p>
 
-      <div className="mt-3 rounded-lg border border-dashed border-border bg-surface/50 p-3 text-xs text-text-secondary">
+      <div className="mt-3 rounded-lg border border-dashed border-border bg-surface/50 p-3 text-[13px] text-text-secondary">
         {NO_PHOTO}
+      </div>
+
+      <div className="mt-2">
+        <UpdatedAt timestamp={report.updated_at} />
       </div>
 
       <div className="mt-3">

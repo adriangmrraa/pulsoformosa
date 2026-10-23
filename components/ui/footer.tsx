@@ -6,7 +6,7 @@ import {
 
 function PendingOwner() {
   return (
-    <span className="mt-1 inline-block rounded border border-border px-1.5 py-0.5 text-[11px] text-text-secondary">
+    <span className="mt-1 inline-block rounded border border-border px-1.5 py-0.5 text-[13px] text-text-secondary">
       pending-owner · DA-08/DA-09
     </span>
   );

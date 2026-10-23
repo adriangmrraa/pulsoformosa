@@ -36,6 +36,12 @@
   --color-input: #2a4054;
   --color-ring: #7bb7f0;
 
+  /* §8.4/REQ-STY-03: body 15px, metadata >=13px. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.55;
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
 }

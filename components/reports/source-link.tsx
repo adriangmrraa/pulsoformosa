@@ -1,10 +1,20 @@
 interface SourceLinkProps {
-  href: string;
+  href?: string;
   label: string;
   external?: boolean;
 }
 
 export function SourceLink({ href, label, external = true }: SourceLinkProps) {
+  if (!href) return null;
+
+  if (href.startsWith("mock://")) {
+    return (
+      <span className="inline-flex min-h-11 items-center text-[13px] text-text-secondary">
+        {label} (mock)
+      </span>
+    );
+  }
+
   return (
     <a
       href={href}
