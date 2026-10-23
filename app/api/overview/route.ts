@@ -3,8 +3,7 @@ import type { SourceHealth, SourceKey, OverviewPayload } from "@/lib/domain/type
 import { apiError, logApiError } from "@/lib/api-error";
 import { isProductionEnvironment } from "@/lib/env";
 import { getOverviewProvider } from "@/lib/providers";
-import { DEFAULT_CATEGORY, DEFAULT_PERIOD } from "@/lib/validation/query-params";
-import { CATEGORY_SLUGS } from "@/lib/domain/taxonomy";
+import { parseOverviewQuery, toReportQuery } from "@/lib/validation/query-params";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +20,9 @@ function fixtureHealth(): Record<SourceKey, SourceHealth> {
   );
 }
 
-export async function GET() {
+export async function GET(
+  request: Request = new Request("http://internal/api/overview"),
+) {
   // DEC-02: JSON 404 with the uniform §17.9 body — not a redirect, not the
   // HTML not-found page. A redirect would reveal that the route exists.
   if (isProductionEnvironment()) {
@@ -35,10 +36,9 @@ export async function GET() {
   }
 
   const provider = getOverviewProvider();
-  const query = {
-    category: CATEGORY_SLUGS[DEFAULT_CATEGORY],
-    period: DEFAULT_PERIOD,
-  } as const;
+  // The microsummary must follow the same filters as the visible list (W-12).
+  const raw = Object.fromEntries(new URL(request.url).searchParams.entries());
+  const query = toReportQuery(parseOverviewQuery(raw));
 
   const [climate, weather, river, community] = await Promise.all([
     provider.getClimateContext(),
