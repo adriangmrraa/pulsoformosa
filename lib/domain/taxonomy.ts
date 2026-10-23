@@ -106,6 +106,12 @@ export const EDITORIAL_LABELS: Record<EditorialStatus, string> = {
   ARCHIVED: "Archivado",
 };
 
+export function isPublicEditorialStatus(status: EditorialStatus): boolean {
+  return (
+    status === "PUBLISHED_UNVERIFIED" || status === "VERIFIED_EDITORIALLY"
+  );
+}
+
 export function categoryFromSlug(slug: CategorySlug): ReportCategory | "ALL" {
   return CATEGORY_SLUGS[slug];
 }

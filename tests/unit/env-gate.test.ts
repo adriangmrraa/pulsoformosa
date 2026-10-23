@@ -148,3 +148,66 @@ describe("mock report filtering", () => {
     expect(stats.distinct_zones_count).toBeGreaterThan(0);
   });
 });
+
+describe("public-only report reads", () => {
+  beforeEach(() => {
+    vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "development");
+  });
+
+  afterEach(() => {
+    restoreEnv();
+    vi.unstubAllEnvs();
+  });
+
+  it("returns null for a hidden report", async () => {
+    const provider = getReportsProvider();
+    const hidden = await provider.getReportById("rpt_mock_h1dd3n");
+    expect(hidden).toBeNull();
+  });
+
+  it("never lists non-public editorial statuses", async () => {
+    const page = await getReportsProvider().listReports({
+      category: "ALL",
+      period: "30d",
+      limit: 50,
+    });
+    expect(page.items.some((item) => item.id === "rpt_mock_h1dd3n")).toBe(false);
+  });
+});
+
+describe("/api/overview honors request filters (W-12)", () => {
+  beforeEach(() => {
+    vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "development");
+  });
+
+  afterEach(() => {
+    restoreEnv();
+    vi.unstubAllEnvs();
+  });
+
+  it("derives community stats from the same category and period as the list", async () => {
+    const allResponse = await GET();
+    const allBody = await allResponse.json();
+
+    const filteredResponse = await GET(
+      new Request(
+        "http://internal/api/overview?categoria=calles&periodo=30d",
+      ),
+    );
+    const filteredBody = await filteredResponse.json();
+
+    expect(filteredBody.community.period).toBe("30d");
+    expect(filteredBody.community.published_reports_count).toBeLessThan(
+      allBody.community.published_reports_count,
+    );
+
+    const expected = await getReportsProvider().listReports({
+      category: "ROADS",
+      period: "30d",
+      limit: 50,
+    });
+    expect(filteredBody.community.published_reports_count).toBe(
+      expected.items.length,
+    );
+  });
+});

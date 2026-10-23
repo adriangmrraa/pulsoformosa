@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: `Reportar un problema — ${SITE_NAME}`,
   description:
     "Enviá un reporte anónimo sobre agua, calles, servicios o ambiente en Formosa. Sin registro y sin datos personales.",
+  alternates: { canonical: "/reportar" },
 };
 
 export default function ReportarPage() {

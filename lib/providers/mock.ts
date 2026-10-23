@@ -15,9 +15,11 @@ import {
 } from "@/tests/fixtures/overview.fixture";
 import {
   FIXTURE_REPORT_IDS,
+  HIDDEN_REPORT_FIXTURE,
   REPORTS_FIXTURE,
   zoneLabelForId,
 } from "@/tests/fixtures/reports.fixture";
+import { isPublicEditorialStatus } from "@/lib/domain/taxonomy";
 import type { OverviewDataProvider, ReportsProvider } from "./types";
 
 const PERIOD_MS: Record<TimeRange, number> = {
@@ -39,6 +41,9 @@ function filteredReports(query: ReportQuery): PublicReport[] {
   const zoneLabel = zoneLabelForId(query.zona) ?? query.zona;
 
   return REPORTS_FIXTURE.filter((report) => {
+    if (!isPublicEditorialStatus(report.editorial_status)) {
+      return false;
+    }
     if (query.category !== "ALL" && report.category !== query.category) {
       return false;
     }
@@ -111,7 +116,13 @@ export class MockReportsProvider implements ReportsProvider {
   }
 
   async getReportById(id: string): Promise<PublicReport | null> {
-    return REPORTS_FIXTURE.find((report) => report.id === id) ?? null;
+    const report =
+      REPORTS_FIXTURE.find((item) => item.id === id) ??
+      (HIDDEN_REPORT_FIXTURE.id === id ? HIDDEN_REPORT_FIXTURE : undefined);
+    if (!report || !isPublicEditorialStatus(report.editorial_status)) {
+      return null;
+    }
+    return report;
   }
 }
 

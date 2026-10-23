@@ -61,7 +61,10 @@ export default defineConfig({
         timeout: 300_000,
         stdout: "ignore",
         stderr: "pipe",
-        env: { PUBLIC_ENVIRONMENT_LABEL: "development" },
+        env: {
+          PUBLIC_ENVIRONMENT_LABEL: "development",
+          APP_BASE_URL: baseURL,
+        },
       }
     : undefined,
 });

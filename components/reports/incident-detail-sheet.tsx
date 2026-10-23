@@ -5,6 +5,7 @@ import type { PublicReport } from "@/lib/domain/report";
 import {
   CATEGORY_LABELS,
   EDITORIAL_LABELS,
+  isPublicEditorialStatus,
 } from "@/lib/domain/taxonomy";
 import {
   NO_PHOTO,
@@ -37,6 +38,11 @@ export function IncidentDetailSheet({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const isPublic = report
+    ? isPublicEditorialStatus(report.editorial_status)
+    : false;
+  const isPending = report?.editorial_status === "PENDING_REVIEW";
+
   function sharePath(): string {
     const query = searchParams.toString();
     return query ? `${pathname}?${query}` : pathname;
@@ -57,7 +63,7 @@ export function IncidentDetailSheet({
         }
       }}
     >
-      {report ? (
+      {report && isPublic ? (
         <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -69,19 +75,6 @@ export function IncidentDetailSheet({
             </DialogDescription>
             <DevMockBadge />
           </DialogHeader>
-
-          {report.editorial_status === "PENDING_REVIEW" ? (
-            <p className="rounded-lg bg-surface p-2 text-xs text-text-secondary">
-              {REPORT_PENDING_LINE}
-            </p>
-          ) : null}
-
-          {report.editorial_status === "HIDDEN" ||
-          report.editorial_status === "REJECTED" ? (
-            <p className="rounded-lg bg-surface p-2 text-sm">
-              Este reporte no está disponible públicamente.
-            </p>
-          ) : null}
 
           <p className="text-sm text-text">{report.description}</p>
 
@@ -142,11 +135,15 @@ export function IncidentDetailSheet({
       ) : (
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Reporte no disponible</DialogTitle>
+            <DialogTitle>
+              {isPending ? "Reporte en revisión" : "Reporte no disponible"}
+            </DialogTitle>
             <DialogDescription>
-              El enlace puede estar incompleto o el reporte ya no está visible.
-              Podés seguir usando la lista y los filtros.
+              {isPending
+                ? REPORT_PENDING_LINE
+                : "El enlace puede estar incompleto o el reporte ya no está visible. Podés seguir usando la lista y los filtros."}
             </DialogDescription>
+            {report ? <DevMockBadge /> : null}
           </DialogHeader>
         </DialogContent>
       )}

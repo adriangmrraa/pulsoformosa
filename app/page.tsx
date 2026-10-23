@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import type { Metadata } from "next";
 import type { AsyncState } from "@/lib/domain/async-state";
 import type {
   ClimateContext,
@@ -30,9 +30,14 @@ import { IncidentDetailSheet } from "@/components/reports/incident-detail-sheet"
 import { Pagination } from "@/components/home/pagination";
 import { EmptyState } from "@/components/home/empty-state";
 import { ReportCTA } from "@/components/home/report-cta";
+import { getAppBaseUrl } from "@/lib/site";
 import { HydrationMarker } from "@/components/ui/hydration-marker";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const CENTER: [number, number] = [-58.18, -26.18];
 const EMPTY_PAGE: ReportListPage = { items: [], nextCursor: null, pageSize: 0 };
@@ -78,14 +83,19 @@ function errorOrEmpty<T>(overview: OverviewPayload | null): AsyncState<T> {
     : { status: "error", message: ERROR_MESSAGE };
 }
 
-async function fetchOverview(): Promise<OverviewPayload | null> {
+async function fetchOverview(
+  query: OverviewQuery,
+): Promise<OverviewPayload | null> {
   try {
-    const requestHeaders = await headers();
-    const host =
-      requestHeaders.get("host") ??
-      `127.0.0.1:${process.env.PORT ?? "3000"}`;
-    const proto = requestHeaders.get("x-forwarded-proto") ?? "http";
-    const response = await fetch(`${proto}://${host}/api/overview`, {
+    const url = new URL("/api/overview", getAppBaseUrl());
+    url.searchParams.set("periodo", query.periodo);
+    if (query.categoria !== "todos") {
+      url.searchParams.set("categoria", query.categoria);
+    }
+    if (query.zona) url.searchParams.set("zona", query.zona);
+    if (query.subtipo) url.searchParams.set("subtipo", query.subtipo);
+
+    const response = await fetch(url, {
       cache: "no-store",
     });
     if (!response.ok) return null;
@@ -120,7 +130,7 @@ export default async function HomePage({
     cursor: firstValue(raw.cursor),
   });
 
-  const overview = await fetchOverview();
+  const overview = await fetchOverview(query);
 
   let reportPage: ReportListPage = EMPTY_PAGE;
   try {

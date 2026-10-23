@@ -4,7 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/ui/site-header";
 import { Footer } from "@/components/ui/footer";
 import {
-  APP_BASE_URL,
+  getAppBaseUrl,
   REGION,
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -18,10 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(APP_BASE_URL),
+  metadataBase: new URL(getAppBaseUrl()),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
-  alternates: { canonical: "/" },
   openGraph: {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,

@@ -212,4 +212,13 @@ export const REPORTS_FIXTURE: readonly PublicReport[] = SEEDS.map((seed) => {
   } satisfies PublicReport;
 });
 
+export const HIDDEN_REPORT_FIXTURE: PublicReport = {
+  ...REPORTS_FIXTURE[0],
+  id: "rpt_mock_h1dd3n",
+  summary: "Contenido retirado que no debe exponerse.",
+  description:
+    "Contenido retirado que no debe exponerse. Dato de prueba generado para desarrollo; no corresponde a un hecho real.",
+  editorial_status: "HIDDEN",
+};
+
 export const FIXTURE_REPORT_IDS = REPORTS_FIXTURE.map((report) => report.id);
