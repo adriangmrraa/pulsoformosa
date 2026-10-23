@@ -42,3 +42,31 @@ test("keyboard traversal leaves no focus trap", async ({ page }) => {
   expect(active.insideBody).toBe(true);
   expect(active.tag).not.toBeNull();
 });
+
+test("interactive controls meet the 44px comfort target", async ({ page }) => {
+  for (const route of ["/", "/reportar"]) {
+    await gotoHydrated(page, route);
+    const tooSmall = await page.evaluate(() =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          "button, [role='radio'], summary",
+        ),
+      )
+        .filter((element) => {
+          const rect = element.getBoundingClientRect();
+          return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            (rect.width < 43.5 || rect.height < 43.5)
+          );
+        })
+        .map((element) => ({
+          tag: element.tagName,
+          text: (element.textContent ?? "").trim().slice(0, 40),
+          width: element.getBoundingClientRect().width,
+          height: element.getBoundingClientRect().height,
+        })),
+    );
+    expect(tooSmall).toEqual([]);
+  }
+});

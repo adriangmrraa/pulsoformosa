@@ -87,4 +87,8 @@ test("captures the desktop report snapshot", async ({ page }) => {
     path: `${SNAPSHOTS}/reportar-1440x900.png`,
     fullPage: true,
   });
+  await expect(page.locator("link[rel='canonical']")).toHaveAttribute(
+    "href",
+    /\/reportar$/,
+  );
 });

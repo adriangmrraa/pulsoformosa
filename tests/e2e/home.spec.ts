@@ -53,6 +53,19 @@ test.describe("home", () => {
     });
   });
 
+  test("renders at 1280px and keeps its canonical", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await gotoHydrated(page, "/");
+    await expect(page.locator("link[rel='canonical']")).toHaveAttribute(
+      "href",
+      /3100\/?$/,
+    );
+    await page.screenshot({
+      path: `${SNAPSHOTS}/home-1280x900.png`,
+      fullPage: true,
+    });
+  });
+
   test("renders at mobile width without horizontal scroll", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoHydrated(page, "/");
