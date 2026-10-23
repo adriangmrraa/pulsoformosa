@@ -41,10 +41,10 @@ export function RiverLevelCard({ state, fixture }: RiverLevelCardProps) {
   return (
     <section
       aria-labelledby="rio-title"
-      className="rounded-xl border border-border/60 bg-card p-4"
+      className="relative bg-card p-5 sm:p-6"
     >
       <div className="flex items-start justify-between gap-2">
-        <h2 id="rio-title" className="text-lg font-semibold">
+        <h2 id="rio-title" className="text-xs font-semibold tracking-[0.16em] text-accent-agua uppercase">
           Río Paraguay — Puerto Formosa
         </h2>
         {fixture ? <DevMockBadge /> : null}
@@ -78,7 +78,7 @@ export function RiverLevelCard({ state, fixture }: RiverLevelCardProps) {
 
       {data ? (
         <div className="mt-3 space-y-2">
-          <p className="tabular text-3xl font-semibold text-accent-agua">
+          <p className="tabular text-5xl font-semibold leading-none text-accent-agua sm:text-6xl">
             {freshnessExpired
               ? WAITING_UPDATE
               : data.level_m === null
@@ -86,7 +86,7 @@ export function RiverLevelCard({ state, fixture }: RiverLevelCardProps) {
                 : `${data.level_m} m`}
           </p>
 
-          <dl className="grid grid-cols-2 gap-1 text-xs text-text-secondary">
+          <dl className="grid grid-cols-2 gap-2 border-t border-border/60 pt-3 text-xs text-text-secondary">
             <div>
               <dt className="inline">Tendencia: </dt>
               <dd className="inline">{TREND_LABELS[data.trend]}</dd>

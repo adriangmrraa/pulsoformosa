@@ -34,10 +34,10 @@ export function WeatherPreview({ state, fixture }: WeatherPreviewProps) {
   return (
     <section
       aria-labelledby="lluvias-title"
-      className="rounded-xl border border-border/60 bg-card p-4"
+      className="relative bg-card p-5 sm:p-6"
     >
       <div className="flex items-start justify-between gap-2">
-        <h2 id="lluvias-title" className="text-lg font-semibold">
+        <h2 id="lluvias-title" className="text-xs font-semibold tracking-[0.16em] text-accent-lluvia uppercase">
           Próximas lluvias
         </h2>
         {fixture ? <DevMockBadge /> : null}
@@ -73,10 +73,10 @@ export function WeatherPreview({ state, fixture }: WeatherPreviewProps) {
         <div className="mt-3 space-y-2">
           <p className="text-sm text-text-secondary">{FORECAST_LOCATION_LINE}</p>
 
-          <div className="rounded-lg border border-border/60 bg-surface/60 p-3">
+          <div className="border-l-2 border-accent-lluvia bg-surface/45 p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm font-medium">{data.location}</p>
-              <p className="tabular text-2xl font-semibold text-accent-lluvia">
+              <p className="tabular text-4xl font-semibold leading-none text-accent-lluvia">
                 {freshnessExpired
                   ? WAITING_UPDATE
                   : data.precip_expected_mm === null

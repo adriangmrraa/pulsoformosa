@@ -17,7 +17,7 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
   const verified = report.editorial_status === "VERIFIED_EDITORIALLY";
 
   return (
-    <article className="rounded-xl border border-border/60 bg-card p-4 sm:p-5">
+    <article className="reveal-up border-y border-border/60 border-l-2 border-l-accent-agua bg-card/35 p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-text-secondary">
           {CATEGORY_LABELS[report.category]}
@@ -34,7 +34,7 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
         {fixture ? <DevMockBadge /> : null}
       </div>
 
-      <h3 className="mt-3 text-base font-semibold leading-snug">
+      <h3 className="mt-4 max-w-2xl text-lg font-semibold leading-snug sm:text-xl">
         <Link
           href={sharePath}
           className="transition-ui hover:text-accent-agua"
@@ -59,7 +59,7 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
         <span className="sr-only">({formatAbsoluteART(report.published_at)})</span>
       </p>
 
-      <div className="mt-3 rounded-lg border border-dashed border-border bg-surface/50 p-3 text-[13px] text-text-secondary">
+      <div className="mt-4 border-t border-border/60 pt-3 text-[13px] text-text-secondary">
         {NO_PHOTO}
       </div>
 
@@ -67,7 +67,7 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
         <UpdatedAt timestamp={report.updated_at} />
       </div>
 
-      <div className="mt-3">
+      <div className="mt-4">
         <ShareCopyButton
           path={sharePath}
           text={`${report.summary} · ${CATEGORY_LABELS[report.category]} · Formosa`}

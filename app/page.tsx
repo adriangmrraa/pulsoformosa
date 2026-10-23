@@ -181,27 +181,34 @@ export default async function HomePage({
     <>
       <HydrationMarker />
       <div className="container-page py-6 pb-28 md:py-10">
-        <div className="max-w-3xl">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+        <div className="max-w-4xl reveal-up">
+          <p className="mb-3 text-xs font-semibold tracking-[0.18em] text-accent-agua uppercase">
+            Pulso ciudadano · Formosa Capital
+          </p>
+          <h1 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             Esto se está reportando en Formosa
           </h1>
-          <p className="mt-2 text-sm text-text-secondary">
+          <p className="mt-4 max-w-2xl text-base text-text-secondary sm:text-lg">
             Reportes de vecinos con contexto climático oficial. Los conteos son
             reportes públicos, no personas afectadas.
           </p>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <CommunitySnapshot
+        <div className="mt-8 grid gap-4 xl:grid-cols-12">
+          <div className="xl:col-span-7">
+            <CommunitySnapshot
             state={communityState}
             fixture
             predominantCategoryLabel={predominantCategory(reportPage.items)}
             generatedAt={overview?.published_at}
-          />
-          <ClimateContextCard state={climateState} fixture />
+            />
+          </div>
+          <div className="xl:col-span-5">
+            <ClimateContextCard state={climateState} fixture />
+          </div>
         </div>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-4 grid gap-px overflow-hidden rounded-[1.5rem] border border-border/60 bg-border/60 md:grid-cols-2">
           <WeatherPreview state={weatherState} fixture />
           <RiverLevelCard state={riverState} fixture />
         </div>

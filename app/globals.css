@@ -55,7 +55,13 @@ html {
 }
 
 body {
-  background-color: var(--color-navy);
+  background:
+    radial-gradient(circle at 12% -8%, rgb(69 198 204 / 0.16), transparent 28rem),
+    radial-gradient(circle at 88% 8%, rgb(123 183 240 / 0.12), transparent 24rem),
+    linear-gradient(rgb(185 202 216 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(185 202 216 / 0.025) 1px, transparent 1px),
+    var(--color-navy);
+  background-size: auto, auto, 28px 28px, 28px 28px, auto;
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -107,6 +113,67 @@ body {
   transition-timing-function: ease-out;
 }
 
+.field-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgb(69 198 204 / 0.32);
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(135deg, rgb(23 41 58 / 0.98), rgb(14 30 44 / 0.98)),
+    var(--color-card);
+}
+
+.field-hero::before,
+.field-hero::after {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+}
+
+.field-hero::before {
+  width: 20rem;
+  height: 20rem;
+  right: -6rem;
+  bottom: -10rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(69 198 204 / 0.35);
+  background: radial-gradient(circle, transparent 42%, rgb(69 198 204 / 0.04) 42.5%, transparent 43%);
+}
+
+.field-hero::after {
+  inset: 0;
+  opacity: 0.5;
+  background-image: linear-gradient(115deg, transparent 25%, rgb(123 183 240 / 0.08) 25.4%, transparent 26%);
+  background-size: 18px 18px;
+}
+
+.signal-panel {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgb(185 202 216 / 0.34);
+  border-bottom: 1px solid rgb(185 202 216 / 0.14);
+  background: linear-gradient(90deg, rgb(23 41 58 / 0.8), rgb(23 41 58 / 0.35));
+}
+
+.signal-panel::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  content: "";
+  background: linear-gradient(90deg, var(--color-accent-agua), transparent 60%);
+}
+
+.reveal-up {
+  animation: reveal-up 520ms ease-out both;
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -115,5 +182,9 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .reveal-up {
+    animation: none;
   }
 }

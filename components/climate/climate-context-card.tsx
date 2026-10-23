@@ -30,10 +30,10 @@ export function ClimateContextCard({ state, fixture }: ClimateContextCardProps) 
   return (
     <section
       aria-labelledby="enso-title"
-      className="rounded-xl border border-border/60 bg-card p-4"
+      className="signal-panel reveal-up rounded-[1.75rem] p-5 sm:p-7"
     >
       <div className="flex items-start justify-between gap-2">
-        <h2 id="enso-title" className="text-lg font-semibold">
+        <h2 id="enso-title" className="text-xs font-semibold tracking-[0.16em] text-accent-lluvia uppercase">
           Contexto ENSO
         </h2>
         {fixture ? <DevMockBadge /> : null}
@@ -69,7 +69,7 @@ export function ClimateContextCard({ state, fixture }: ClimateContextCardProps) 
 
       {data ? (
         <div className="mt-3 space-y-3">
-          <p className="text-2xl font-semibold tracking-tight">
+          <p className="text-4xl font-semibold leading-none tracking-tight sm:text-5xl">
             {ENSO_PHASE_LABELS[data.phase ?? "UNKNOWN"]}
           </p>
 
@@ -88,7 +88,7 @@ export function ClimateContextCard({ state, fixture }: ClimateContextCardProps) 
           />
           )}
 
-          <dl className="grid grid-cols-1 gap-1 text-xs text-text-secondary sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 text-xs text-text-secondary sm:grid-cols-2">
             <div>
               <dt className="inline">Emitido: </dt>
               <dd className="inline">{formatAbsoluteART(data.issued_at)}</dd>
