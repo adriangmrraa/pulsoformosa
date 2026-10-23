@@ -9,10 +9,12 @@ import type {
 
 export const FIXTURE_CAPTURED_AT = "2026-10-22T10:00:00.000Z";
 
-const CAPTURED_MS = new Date(FIXTURE_CAPTURED_AT).getTime();
+// Timestamps are generated relative to module load so freshness windows stay
+// meaningful; FIXTURE_CAPTURED_AT remains the visible mock marker.
+const NOW_MS = Date.now();
 
 function isoHoursAgo(hours: number): string {
-  return new Date(CAPTURED_MS - hours * 3_600_000).toISOString();
+  return new Date(NOW_MS - hours * 3_600_000).toISOString();
 }
 
 export const CLIMATE_FIXTURE: ClimateContext = {

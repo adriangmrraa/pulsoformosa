@@ -5,12 +5,15 @@ import {
   MEASUREMENT_ERROR_PREFIX,
   NO_RECENT_DATA,
   RIVER_DATUM_DISCLAIMER,
+  WAITING_UPDATE,
 } from "@/lib/domain/microcopy";
+import { isStaleFor } from "@/lib/domain/staleness";
 import { formatAbsoluteART } from "@/lib/domain/time";
 import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import { SourceLink } from "@/components/reports/source-link";
 import { DataStaleNotice } from "./data-stale-notice";
 import { DataErrorState } from "./data-error-state";
+import { PartialNotice } from "@/components/ui/partial-notice";
 
 const TREND_LABELS: Record<RiverLevel["trend"], string> = {
   rising: "Subiendo",
@@ -33,6 +36,8 @@ export function RiverLevelCard({ state, fixture }: RiverLevelCardProps) {
         : null
   ) as RiverLevel | null;
 
+  const freshnessExpired = data ? isStaleFor(data.measured_at, "river") : false;
+
   return (
     <section
       aria-labelledby="rio-title"
@@ -44,6 +49,10 @@ export function RiverLevelCard({ state, fixture }: RiverLevelCardProps) {
         </h2>
         {fixture ? <DevMockBadge /> : null}
       </div>
+
+      {state.status === "partial" ? (
+        <PartialNotice missing={state.missing} />
+      ) : null}
 
       {state.status === "loading" ? (
         <p className="mt-3 text-sm text-text-secondary">{LOADING_DATA}</p>
@@ -70,7 +79,11 @@ export function RiverLevelCard({ state, fixture }: RiverLevelCardProps) {
       {data ? (
         <div className="mt-3 space-y-2">
           <p className="tabular text-3xl font-semibold text-accent-agua">
-            {data.level_m === null ? NO_RECENT_DATA : `${data.level_m} m`}
+            {freshnessExpired
+              ? WAITING_UPDATE
+              : data.level_m === null
+                ? NO_RECENT_DATA
+                : `${data.level_m} m`}
           </p>
 
           <dl className="grid grid-cols-2 gap-1 text-xs text-text-secondary">

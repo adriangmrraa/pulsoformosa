@@ -6,11 +6,14 @@ import {
   LOADING_DATA,
   MEASUREMENT_ERROR_PREFIX,
   NO_RECENT_DATA,
+  WAITING_UPDATE,
 } from "@/lib/domain/microcopy";
+import { isStaleFor } from "@/lib/domain/staleness";
 import { formatAbsoluteART } from "@/lib/domain/time";
 import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import { DataStaleNotice } from "./data-stale-notice";
 import { DataErrorState } from "./data-error-state";
+import { PartialNotice } from "@/components/ui/partial-notice";
 
 interface WeatherPreviewProps {
   state: AsyncState<WeatherPreviewData>;
@@ -26,6 +29,8 @@ export function WeatherPreview({ state, fixture }: WeatherPreviewProps) {
         : null
   ) as WeatherPreviewData | null;
 
+  const freshnessExpired = data ? isStaleFor(data.run_at, "forecast") : false;
+
   return (
     <section
       aria-labelledby="lluvias-title"
@@ -37,6 +42,10 @@ export function WeatherPreview({ state, fixture }: WeatherPreviewProps) {
         </h2>
         {fixture ? <DevMockBadge /> : null}
       </div>
+
+      {state.status === "partial" ? (
+        <PartialNotice missing={state.missing} />
+      ) : null}
 
       {state.status === "loading" ? (
         <p className="mt-3 text-sm text-text-secondary">{LOADING_DATA}</p>
@@ -68,18 +77,22 @@ export function WeatherPreview({ state, fixture }: WeatherPreviewProps) {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm font-medium">{data.location}</p>
               <p className="tabular text-2xl font-semibold text-accent-lluvia">
-                {data.precip_expected_mm === null
-                  ? NO_RECENT_DATA
-                  : `${data.precip_expected_mm} mm`}
+                {freshnessExpired
+                  ? WAITING_UPDATE
+                  : data.precip_expected_mm === null
+                    ? NO_RECENT_DATA
+                    : `${data.precip_expected_mm} mm`}
               </p>
             </div>
             <dl className="mt-2 grid grid-cols-2 gap-1 text-xs text-text-secondary">
               <div>
                 <dt className="inline">Probabilidad: </dt>
                 <dd className="tabular inline">
-                  {data.precip_probability_pct === null
-                    ? NO_RECENT_DATA
-                    : `${data.precip_probability_pct}%`}
+                  {freshnessExpired
+                    ? WAITING_UPDATE
+                    : data.precip_probability_pct === null
+                      ? NO_RECENT_DATA
+                      : `${data.precip_probability_pct}%`}
                 </dd>
               </div>
               <div>

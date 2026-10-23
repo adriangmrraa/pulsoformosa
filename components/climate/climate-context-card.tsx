@@ -1,12 +1,14 @@
 import type { AsyncState } from "@/lib/domain/async-state";
 import type { ClimateContext } from "@/lib/domain/types";
 import { ENSO_DISCLAIMER, ENSO_PHASE_LABELS } from "@/lib/domain/enso";
-import { LOADING_DATA, MEASUREMENT_ERROR_PREFIX } from "@/lib/domain/microcopy";
+import { LOADING_DATA, MEASUREMENT_ERROR_PREFIX, WAITING_UPDATE } from "@/lib/domain/microcopy";
+import { isStaleFor } from "@/lib/domain/staleness";
 import { formatAbsoluteART } from "@/lib/domain/time";
 import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import { DataStaleNotice } from "./data-stale-notice";
 import { DataErrorState } from "./data-error-state";
 import { ProbabilityMetric } from "./probability-metric";
+import { PartialNotice } from "@/components/ui/partial-notice";
 
 interface ClimateContextCardProps {
   state: AsyncState<ClimateContext>;
@@ -22,6 +24,9 @@ export function ClimateContextCard({ state, fixture }: ClimateContextCardProps) 
         : null
   ) as ClimateContext | null;
 
+  // §15.9: past the ENSO freshness window the last number is hidden.
+  const freshnessExpired = data ? isStaleFor(data.observed_at, "enso") : false;
+
   return (
     <section
       aria-labelledby="enso-title"
@@ -33,6 +38,10 @@ export function ClimateContextCard({ state, fixture }: ClimateContextCardProps) 
         </h2>
         {fixture ? <DevMockBadge /> : null}
       </div>
+
+      {state.status === "partial" ? (
+        <PartialNotice missing={state.missing} />
+      ) : null}
 
       {state.status === "loading" ? (
         <p className="mt-3 text-sm text-text-secondary">{LOADING_DATA}</p>
@@ -64,6 +73,9 @@ export function ClimateContextCard({ state, fixture }: ClimateContextCardProps) 
             {ENSO_PHASE_LABELS[data.phase ?? "UNKNOWN"]}
           </p>
 
+          {freshnessExpired ? (
+            <DataStaleNotice label={WAITING_UPDATE} />
+          ) : (
           <ProbabilityMetric
             valuePct={data.phase_probability_pct ?? null}
             title="Probabilidad oficial de fase"
@@ -74,6 +86,7 @@ export function ClimateContextCard({ state, fixture }: ClimateContextCardProps) 
             periodLabel={data.season_label ?? "Trimestre no informado"}
             source={{ label: "Consulta fuente", href: data.source_url }}
           />
+          )}
 
           <dl className="grid grid-cols-1 gap-1 text-xs text-text-secondary sm:grid-cols-2">
             <div>

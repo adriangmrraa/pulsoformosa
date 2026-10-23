@@ -9,6 +9,7 @@ import { formatAbsoluteART } from "@/lib/domain/time";
 import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import { DataErrorState } from "@/components/climate/data-error-state";
 import { DataStaleNotice } from "@/components/climate/data-stale-notice";
+import { PartialNotice } from "@/components/ui/partial-notice";
 
 interface CommunitySnapshotProps {
   state: AsyncState<CommunityStats>;
@@ -43,6 +44,10 @@ export function CommunitySnapshot({
         </h2>
         {fixture ? <DevMockBadge /> : null}
       </div>
+
+      {state.status === "partial" ? (
+        <PartialNotice missing={state.missing} />
+      ) : null}
 
       {state.status === "loading" ? (
         <p className="mt-3 text-sm text-text-secondary">{LOADING_DATA}</p>

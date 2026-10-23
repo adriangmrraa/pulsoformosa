@@ -132,3 +132,97 @@ describe("data-bearing component states", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("state completeness", () => {
+  it("renders a visible partial notice with the missing fields", () => {
+    render(
+      <CommunitySnapshot
+        state={{
+          status: "partial",
+          data: { published_reports_count: 2 },
+          missing: ["distinct_zones_count"],
+        }}
+        fixture
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Información parcial");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Faltan: distinct_zones_count",
+    );
+  });
+
+  it("renders partial notices on the climate, weather and river cards", () => {
+    const { rerender } = render(
+      <ClimateContextCard
+        state={{ status: "partial", data: {}, missing: ["phase"] }}
+        fixture
+      />,
+    );
+    expect(screen.getByText(/Información parcial/)).toBeInTheDocument();
+
+    rerender(
+      <WeatherPreview
+        state={{ status: "partial", data: {}, missing: ["model"] }}
+        fixture
+      />,
+    );
+    expect(screen.getByText(/Información parcial/)).toBeInTheDocument();
+
+    rerender(
+      <RiverLevelCard
+        state={{ status: "partial", data: {}, missing: ["level_m"] }}
+        fixture
+      />,
+    );
+    expect(screen.getByText(/Información parcial/)).toBeInTheDocument();
+  });
+
+  it("renders the offline state as an accessible alert", () => {
+    render(<ClimateContextCard state={{ status: "offline" }} fixture />);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "No pudimos actualizar esta medición",
+    );
+  });
+
+  it("hides the ENSO number and waits once past the freshness window", () => {
+    render(
+      <ClimateContextCard
+        state={{
+          status: "success",
+          data: { ...CLIMATE_FIXTURE, observed_at: "2026-01-01T00:00:00.000Z" },
+        }}
+        fixture
+      />,
+    );
+    expect(screen.getByText("Esperando actualización")).toBeInTheDocument();
+    expect(screen.queryByText("85%")).toBeNull();
+  });
+
+  it("hides the forecast number past the forecast window", () => {
+    render(
+      <WeatherPreview
+        state={{
+          status: "success",
+          data: { ...WEATHER_FIXTURE, run_at: "2026-01-01T00:00:00.000Z" },
+        }}
+        fixture
+      />,
+    );
+    expect(screen.getAllByText("Esperando actualización").length).toBeGreaterThan(0);
+    expect(screen.queryByText("18.5 mm")).toBeNull();
+  });
+
+  it("hides the river level past the river window", () => {
+    render(
+      <RiverLevelCard
+        state={{
+          status: "success",
+          data: { ...RIVER_FIXTURE, measured_at: "2026-01-01T00:00:00.000Z" },
+        }}
+        fixture
+      />,
+    );
+    expect(screen.getByText("Esperando actualización")).toBeInTheDocument();
+    expect(screen.queryByText("3.2 m")).toBeNull();
+  });
+});

@@ -74,6 +74,18 @@ export const GEOMETRY_POINT = "Un punto";
 export const GEOMETRY_STREET = "Un tramo de calle";
 export const GEOMETRY_AREA = "Una zona aproximada";
 export const GEOMETRY_PENDING = "Pendiente para la próxima iteración";
+export const MAP_PENDING_NOTE =
+  "El mapa interactivo llega en la próxima iteración. Podés marcar el punto con coordenadas o usar tu ubicación.";
+export const UPLOADING_PHOTOS = "Subiendo fotos…";
+export const PHOTO_REJECTED_TYPE =
+  "Algunos archivos no son JPEG, PNG o HEIC y no se agregaron.";
+export const PHOTO_REJECTED_SIZE =
+  "Algunos archivos superan los 5 MB y no se agregaron.";
+export const PHOTO_LIMIT = "Podés adjuntar hasta 3 fotos.";
+export const TURNSTILE_CONFIGURED =
+  "Espacio reservado para la verificación anti-bots (configurado).";
+export const TURNSTILE_NOT_CONFIGURED =
+  "Protección anti-bots no configurada en este entorno.";
 export const OUTSIDE_REGION_ERROR =
   "La ubicación elegida está fuera del área de Formosa. Podés corregir el punto sin perder el resto del reporte.";
 export const DESCRIPTION_WARNING =
