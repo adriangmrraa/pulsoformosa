@@ -26,9 +26,9 @@ export function Footer() {
         <div className="mt-6 grid gap-x-8 gap-y-1 md:grid-cols-2">
           <LegalInfoSheet id="about" title="Qué son estos datos">
             <p>
-              Esta home muestra reportes enviados por vecinos y datos de
-              contexto climático de fuentes oficiales. Los reportes ciudadanos
-              no están verificados automáticamente.
+              Esta home muestra reportes enviados por vecinos sobre un mapa de
+              la ciudad. Los reportes ciudadanos no están verificados
+              automáticamente.
             </p>
             <PendingOwner />
           </LegalInfoSheet>

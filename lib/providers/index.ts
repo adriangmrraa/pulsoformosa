@@ -1,6 +1,6 @@
 import { isProductionEnvironment } from "@/lib/env";
-import { MockOverviewDataProvider, MockReportsProvider } from "./mock";
-import type { OverviewDataProvider, ReportsProvider } from "./types";
+import { MockReportsProvider } from "./mock";
+import type { ReportsProvider } from "./types";
 
 export class MockProviderInProductionError extends Error {
   readonly code = "MOCK_IN_PRODUCTION";
@@ -13,15 +13,7 @@ export class MockProviderInProductionError extends Error {
   }
 }
 
-const overviewProvider = new MockOverviewDataProvider();
 const reportsProvider = new MockReportsProvider();
-
-export function getOverviewProvider(): OverviewDataProvider {
-  if (isProductionEnvironment()) {
-    throw new MockProviderInProductionError("overview");
-  }
-  return overviewProvider;
-}
 
 export function getReportsProvider(): ReportsProvider {
   if (isProductionEnvironment()) {

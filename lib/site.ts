@@ -9,15 +9,15 @@ export const REGION = {
   label: "Formosa · Formosa",
 } as const;
 
-export const SITE_TITLE = `${SITE_NAME} — mapa de reportes ciudadanos y clima`;
+export const SITE_TITLE = `${SITE_NAME} — mapa de reportes ciudadanos`;
 
 export const SITE_DESCRIPTION =
-  "Clima, río y reportes de vecinos en Formosa. Mirá lo que se está reportando y sumá un reporte sin registrarte.";
+  "Reportes de vecinos sobre el mapa de Formosa. Mirá lo que se está reportando, sumá una solución o un reporte sin registrarte.";
 
 /**
- * Canonical origin for metadata and the internal overview read. Derived only
- * from operator configuration — never from request headers (SSRF guard).
- * Required outside development; localhost fallback is development-only.
+ * Canonical origin for metadata. Derived only from operator configuration —
+ * never from request headers (SSRF guard). Required outside development;
+ * localhost fallback is development-only.
  */
 export function getAppBaseUrl(): string {
   const raw = (process.env.APP_BASE_URL ?? "").trim();

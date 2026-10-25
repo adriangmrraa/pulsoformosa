@@ -5,9 +5,9 @@ Public civic-reporting site for the province of Formosa, Argentina. Source of tr
 
 ## Product boundaries (binding — spec §0)
 
-- Exactly TWO public routes: `/` (observe: ENSO, rain, river, citizen reports) and `/reportar` (anonymous incident report). Internal `/api/*` endpoints and private admin tooling are allowed; no extra public pages, no public login, no chat/feed/voting.
-- Anonymous reporting: no accounts for citizens. Moderators use private tooling only (CLI or isolated admin service) — never `/api/admin?action=...&secret=...`.
-- Never merge observed data, forecasts, citizen reports and editorial verification into one confidence level. Every climate figure carries variable + unit + timeframe + source.
+- Exactly TWO public routes: `/` (map-first home: report pins, detail panel and solutions) and `/reportar` (anonymous incident report). Internal `/api/*` endpoints and private admin tooling are allowed; no extra public pages, no public login, no chat/feed/voting.
+- Anonymous reporting: no accounts for citizens. Solutions are also anonymous contributions — no name, DNI, email or phone is ever requested. Moderators use private tooling only (CLI or isolated admin service) — never `/api/admin?action=...&secret=...`.
+- Never merge citizen reports, solutions and editorial verification into one confidence level. A report is "Resuelto" only when at least one of its solutions was approved by moderation; nothing else counts as solved.
 - Locale: es-AR (Rioplatense copy), timezone `America/Argentina/Buenos_Aires`, UTC in persistence, metric units.
 
 ## Verified stack (evidence-based, not guessed)
@@ -21,7 +21,7 @@ Derived from spec §14.1 and cross-validated against tracked references
 | Framework | Next.js 16.x App Router + React 19 + TypeScript strict | spec §14.1; muzapp `next 16.2.4`/`react 19.2.4`; dentalogic `next ^16.2.12`/`react ^19.2.8` |
 | UI | Tailwind CSS v4 (`@tailwindcss/postcss`, no tailwind.config) + shadcn/ui (`components.json` style `base-nova`, base-ui primitives) + `cn()` = clsx + tailwind-merge | both refs' package.json + components.json |
 | Icons | `lucide-react` ONLY — never Material Icons / Font Awesome / heroicons | dentalogic AGENTS.md + package.json |
-| Maps | MapLibre GL JS + PMTiles basemap (Protomaps/Planetiler) served from object storage/CDN with HTTP Range + CORS | spec §14.7; never `tile.openstreetmap.org` for load, never Nominatim public for autocomplete |
+| Maps | MapLibre GL JS (`maplibre-gl`), client-only via `next/dynamic ssr:false`; basemap style from `NEXT_PUBLIC_MAP_STYLE_URL` with a bundled fallback style and a labelled SVG fallback — PMTiles/provincial cartography deferred (XCL-01) | spec §14.7 adapted for this iteration; never `tile.openstreetmap.org` for load, never Nominatim public for autocomplete |
 | DB | Neon PostgreSQL via `@neondatabase/serverless` + `drizzle-orm`; `neon(url)` + `drizzle(sql, { schema })` factory in `src/db` | spec §14.1/§16; muzapp `src/db/index.ts` (`createDb`), `drizzle.config.ts` |
 | Migrations | `drizzle-kit generate`/`migrate` into `drizzle/` — never uncontrolled `db push` in production | spec §16.6; muzapp scripts `db:generate`/`db:migrate` |
 | Geospatial | PostGIS **only if** Neon supports and it is validated enabled; otherwise `DOUBLE PRECISION` + bbox queries with planned migration | spec §14.1/§16.2 |
@@ -59,9 +59,9 @@ npm run db:migrate   # drizzle-kit migrate
 ## Layout (spec §23 — do not create empty folders)
 
 ```
-app/(public routes: page.tsx, reportar/page.tsx, api/*/route.ts)
-components/{home,map,reports,climate,ui}
-lib/{db,providers,domain,security,maps,cache,validation}
+app/(public routes: page.tsx, reportar/page.tsx)
+components/{home,map,reports,ui}
+lib/{db,providers,domain,hooks,maps,security,cache,validation}
 jobs/  scripts/  drizzle/  tests/{unit,integration,e2e,fixtures}
 docs/  .github/workflows/
 ```
@@ -72,7 +72,7 @@ PRESENTATION → DOMAIN (`src/modules/<domain>`) → DATA ACCESS → INFRASTRUCT
 
 ## Non-negotiables
 
-- **Never invent data** — no fake stats, incidents, credentials, API permissions or weather estimates. Dev mocks must be visibly marked and never served in production.
+- **Never invent data** — no fake stats, incidents, credentials, API permissions or estimates presented as real. Dev mocks must be visibly marked and never served in production.
 - **Never put `DATABASE_URL` (or any secret) in code, logs, or commits.** `.env.example` is the only tracked env file; placeholders only. `NEXT_PUBLIC_` only for true public values (Turnstile site key).
 - **No direct Postgres access from the browser.** Public reads via read-limited role/views; writes only from privileged backend.
 - Zod-validate every API input; parameterized SQL only; server-side authorization per endpoint; SSRF allowlist for outbound fetch.

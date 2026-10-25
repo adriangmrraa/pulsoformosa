@@ -5,7 +5,7 @@ import type { LocationMethod } from "@/lib/domain/taxonomy";
 import { isInsideFormosaBBox } from "@/lib/domain/geo";
 import {
   GPS_DENIED,
-  MAP_PENDING_NOTE,
+  MAP_MANUAL_NOTE,
   OUTSIDE_REGION_ERROR,
 } from "@/lib/domain/microcopy";
 
@@ -145,7 +145,7 @@ export function LocationPicker({
 
       {manualOpen ? (
         <div className="space-y-2 rounded-lg border border-border bg-surface/60 p-3">
-          <p className="text-[13px] text-text-secondary">{MAP_PENDING_NOTE}</p>
+          <p className="text-[13px] text-text-secondary">{MAP_MANUAL_NOTE}</p>
 
           <div>
             <label htmlFor="barrio" className="text-[13px] font-medium">

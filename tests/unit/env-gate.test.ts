@@ -2,10 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   MockProviderInProductionError,
-  getOverviewProvider,
   getReportsProvider,
 } from "@/lib/providers";
-import { GET } from "@/app/api/overview/route";
 
 const originalLabel = process.env.PUBLIC_ENVIRONMENT_LABEL;
 
@@ -25,71 +23,17 @@ describe("production gate", () => {
 
   it("throws at provider access under PUBLIC_ENVIRONMENT_LABEL=production", () => {
     vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "production");
-    expect(() => getOverviewProvider()).toThrow(MockProviderInProductionError);
     expect(() => getReportsProvider()).toThrow(MockProviderInProductionError);
   });
 
   it("honours trimmed, case-insensitive labels", () => {
     vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "  PRODUCTION  ");
-    expect(() => getOverviewProvider()).toThrow(MockProviderInProductionError);
+    expect(() => getReportsProvider()).toThrow(MockProviderInProductionError);
   });
 
   it("serves the mock providers in development", () => {
     vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "development");
-    expect(getOverviewProvider().sourceKind).toBe("fixture");
     expect(getReportsProvider().sourceKind).toBe("fixture");
-  });
-
-  it("returns a uniform JSON 404 from /api/overview under production", async () => {
-    vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "production");
-    const response = await GET();
-    expect(response.status).toBe(404);
-    const body = await response.json();
-    expect(Object.keys(body).sort()).toEqual([
-      "code",
-      "message",
-      "request_id",
-      "retryable",
-    ]);
-    expect(body.code).toBe("NOT_FOUND");
-    expect(body.retryable).toBe(false);
-    expect(typeof body.request_id).toBe("string");
-    expect(body.request_id.length).toBeGreaterThan(10);
-  });
-});
-
-describe("/api/overview payload", () => {
-  beforeEach(() => {
-    vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "development");
-  });
-
-  afterEach(() => {
-    restoreEnv();
-    vi.unstubAllEnvs();
-  });
-
-  it("returns the §17.1 shape with fixture health", async () => {
-    const response = await GET();
-    expect(response.status).toBe(200);
-    expect(response.headers.get("Cache-Control")).toContain("s-maxage=60");
-
-    const body = await response.json();
-    expect(Object.keys(body).sort()).toEqual(
-      [
-        "climate",
-        "weather",
-        "river",
-        "community",
-        "published_at",
-        "fetched_at",
-        "source_health",
-      ].sort(),
-    );
-    expect(body.source_health.climate.status).toBe("fixture");
-    expect(body.source_health.weather.status).toBe("fixture");
-    expect(body.source_health.river.status).toBe("fixture");
-    expect(body.source_health.community.status).toBe("fixture");
-    expect(new Date(body.published_at).toString()).not.toBe("Invalid Date");
   });
 });
 
@@ -133,20 +77,6 @@ describe("mock report filtering", () => {
     expect(report?.id).toBe(first.id);
     expect(await provider.getReportById("rpt_mock_inexistente")).toBeNull();
   });
-
-  it("derives community stats from the filtered fixtures", async () => {
-    const stats = await getOverviewProvider().getCommunityStats({
-      category: "ALL",
-      period: "30d",
-    });
-    const page = await getReportsProvider().listReports({
-      category: "ALL",
-      period: "30d",
-      limit: 50,
-    });
-    expect(stats.published_reports_count).toBe(page.items.length);
-    expect(stats.distinct_zones_count).toBeGreaterThan(0);
-  });
 });
 
 describe("public-only report reads", () => {
@@ -172,42 +102,5 @@ describe("public-only report reads", () => {
       limit: 50,
     });
     expect(page.items.some((item) => item.id === "rpt_mock_h1dd3n")).toBe(false);
-  });
-});
-
-describe("/api/overview honors request filters (W-12)", () => {
-  beforeEach(() => {
-    vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "development");
-  });
-
-  afterEach(() => {
-    restoreEnv();
-    vi.unstubAllEnvs();
-  });
-
-  it("derives community stats from the same category and period as the list", async () => {
-    const allResponse = await GET();
-    const allBody = await allResponse.json();
-
-    const filteredResponse = await GET(
-      new Request(
-        "http://internal/api/overview?categoria=calles&periodo=30d",
-      ),
-    );
-    const filteredBody = await filteredResponse.json();
-
-    expect(filteredBody.community.period).toBe("30d");
-    expect(filteredBody.community.published_reports_count).toBeLessThan(
-      allBody.community.published_reports_count,
-    );
-
-    const expected = await getReportsProvider().listReports({
-      category: "ROADS",
-      period: "30d",
-      limit: 50,
-    });
-    expect(filteredBody.community.published_reports_count).toBe(
-      expected.items.length,
-    );
   });
 });

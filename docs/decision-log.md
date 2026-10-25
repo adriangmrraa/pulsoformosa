@@ -1,5 +1,13 @@
 # C1 Decision Log — `scaffold-ui-shell`
 
+> **Superseded (map-first-soluciones):** the climate surface described below
+> (ENSO card, weather preview, river level, `/api/overview`, community
+> snapshot, `IncidentDetailSheet` dialog) was removed by owner-authorized
+> change `map-first-soluciones`. The home is now map-first: report pins, a
+> detail panel and anonymous solutions. DEC-01/02/03/05 and the C1B-b map
+> deferrals no longer describe the current product; they stay here as
+> history.
+
 Iteration 1 of the SDD plan (§26). Scope: two public routes (`/`, `/reportar`),
 the `/api/overview` read path, the §15.11 contract seed, and the full
 lint/typecheck/unit/e2e/CI harness.

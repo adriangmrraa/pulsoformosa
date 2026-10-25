@@ -2,23 +2,15 @@
 // proves §5.8/§13/§20.7/§21.2/§6.5/§8.6.1 coverage.
 import type { CategorySlug } from "./taxonomy";
 
-// §5.8 mandatory microcopy ×5
+// §5.8 mandatory microcopy
 export const REPORT_DISCLAIMER =
   "Reportes de vecinos: información aportada por la comunidad, no verificada automáticamente.";
 export const EMERGENCY_DISCLAIMER =
   "No reemplaza avisos del SMN, autoridades, protección civil o servicios de emergencia.";
-export const FORECAST_DISCLAIMER =
-  "Pronóstico: puede cambiar. Consulta la hora y fuente.";
-export const RIVER_DATUM_DISCLAIMER =
-  "Nivel del río: altura de escala hidrométrica, no profundidad sobre el pavimento.";
-export const ENSO_DISCLAIMER =
-  "Probabilidad de fase El Niño: no representa probabilidad de inundación en tu barrio.";
 
 // §13 tone-of-voice lines
 export const LOADING_DATA = "Buscando datos actualizados...";
 export const GPS_DENIED = "Podés marcar la ubicación manualmente";
-export const FORECAST_LOCATION_LINE =
-  "Pronóstico para Formosa Capital, puede cambiar";
 export const REPORT_PENDING_LINE =
   "Tu reporte fue recibido. Aún no aparece públicamente mientras se revisa";
 export const REPORT_PUBLIC_LINE =
@@ -29,13 +21,7 @@ export const SHARE = "Compartir";
 export const SHARE_PANORAMA = "Compartir panorama";
 
 // §9.6 / §5.5 data states
-export const NO_RECENT_DATA = "Sin dato reciente";
 export const NO_DATA = "Sin dato";
-export const SEASONAL_UNAVAILABLE = "Pronóstico estacional no disponible";
-export const WAITING_UPDATE = "Esperando actualización";
-export const STALE_NOTICE = "sin actualización reciente";
-export const MEASUREMENT_ERROR_PREFIX =
-  "No pudimos actualizar esta medición. Último registro:";
 export const EMPTY_REPORTS =
   "Todavía no hay reportes visibles en este período. ¿Ves un problema? Reportalo";
 
@@ -63,7 +49,6 @@ export const APPROX_AREA_WARNING =
   "Esta zona es aproximada; el mapa no confirma toda la superficie inundada";
 
 // home / reporting
-export const QUICK_SUMMARY_TITLE = "Para entenderlo rápido";
 export const MOCK_BADGE = "Dato de prueba — mock de desarrollo";
 export const REPORT_CTA = "Reportar un problema";
 export const REPORT_FORM_TITLE = "Reportar un problema";
@@ -74,8 +59,8 @@ export const GEOMETRY_POINT = "Un punto";
 export const GEOMETRY_STREET = "Un tramo de calle";
 export const GEOMETRY_AREA = "Una zona aproximada";
 export const GEOMETRY_PENDING = "Pendiente para la próxima iteración";
-export const MAP_PENDING_NOTE =
-  "El mapa interactivo llega en la próxima iteración. Podés marcar el punto con coordenadas o usar tu ubicación.";
+export const MAP_MANUAL_NOTE =
+  "Marcá el punto con coordenadas o usá tu ubicación actual.";
 export const UPLOADING_PHOTOS = "Subiendo fotos…";
 export const PHOTO_REJECTED_TYPE =
   "Algunos archivos no son JPEG, PNG o HEIC y no se agregaron.";

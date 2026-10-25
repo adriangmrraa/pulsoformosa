@@ -1,18 +1,9 @@
 import type {
-  ClimateContext,
-  CommunityStats,
   ReportListPage,
   ReportQuery,
-  RiverLevel,
   TimeRange,
-  WeatherPreview,
 } from "@/lib/domain/types";
 import type { PublicReport } from "@/lib/domain/report";
-import {
-  CLIMATE_FIXTURE,
-  RIVER_FIXTURE,
-  WEATHER_FIXTURE,
-} from "@/tests/fixtures/overview.fixture";
 import {
   FIXTURE_REPORT_IDS,
   HIDDEN_REPORT_FIXTURE,
@@ -20,7 +11,7 @@ import {
   zoneLabelForId,
 } from "@/tests/fixtures/reports.fixture";
 import { isPublicEditorialStatus } from "@/lib/domain/taxonomy";
-import type { OverviewDataProvider, ReportsProvider } from "./types";
+import type { ReportsProvider } from "./types";
 
 const PERIOD_MS: Record<TimeRange, number> = {
   "24h": 24 * 3_600_000,
@@ -63,39 +54,6 @@ function cursorToOffset(cursor: string | undefined): number {
   if (!match) return 0;
   const offset = Number(match[1]);
   return Number.isFinite(offset) && offset >= 0 ? offset : 0;
-}
-
-export class MockOverviewDataProvider implements OverviewDataProvider {
-  readonly sourceKind = "fixture" as const;
-
-  async getClimateContext(): Promise<ClimateContext> {
-    return CLIMATE_FIXTURE;
-  }
-
-  async getWeatherPreview(): Promise<WeatherPreview> {
-    return WEATHER_FIXTURE;
-  }
-
-  async getRiverLevel(): Promise<RiverLevel> {
-    return RIVER_FIXTURE;
-  }
-
-  async getCommunityStats(query: ReportQuery): Promise<CommunityStats> {
-    const reports = filteredReports(query);
-    const zones = new Set(
-      reports.map((report) => report.approx_zone).filter(Boolean),
-    );
-
-    return {
-      scope_bbox_or_zone: query.zona ?? "Formosa Capital",
-      period: query.period,
-      published_reports_count: reports.length,
-      distinct_zones_count: zones.size,
-      last_public_report_at: reports[0]?.published_at ?? null,
-      caveat:
-        "Los conteos son reportes públicos del período: no son personas afectadas ni eventos distintos.",
-    };
-  }
 }
 
 export class MockReportsProvider implements ReportsProvider {

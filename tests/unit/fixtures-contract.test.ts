@@ -1,15 +1,5 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import {
-  CLIMATE_FIXTURE,
-  CLIMATE_NULL_PROBE,
-  COMMUNITY_FIXTURE,
-  FIXTURE_CAPTURED_AT,
-  RIVER_FIXTURE,
-  RIVER_NULL_PROBE,
-  WEATHER_FIXTURE,
-  WEATHER_NULL_PROBE,
-} from "@/tests/fixtures/overview.fixture";
 import { SOURCES_FIXTURE } from "@/tests/fixtures/sources.fixture";
 import {
   FIXTURE_REPORT_IDS,
@@ -17,47 +7,13 @@ import {
 } from "@/tests/fixtures/reports.fixture";
 import { isInsideFormosaBBox } from "@/lib/domain/geo";
 
-describe("overview fixtures", () => {
-  it("satisfy the §15.11 shape with every field present", () => {
-    expect(Object.keys(CLIMATE_FIXTURE).sort()).toEqual(
-      [
-        "phase",
-        "phase_probability_pct",
-        "probability_target_description",
-        "season_label",
-        "observed_nino34_c",
-        "observed_at",
-        "issued_at",
-        "source_url",
-        "is_stale",
-        "methodology_url",
-      ].sort(),
-    );
-    expect(WEATHER_FIXTURE.location).toBe("Formosa Capital");
-    expect(RIVER_FIXTURE.station_name).toBe("Puerto Formosa");
-    expect(COMMUNITY_FIXTURE.published_reports_count).toBeGreaterThanOrEqual(0);
-  });
-
+describe("source fixtures", () => {
   it("uses mock:// source URLs and captured_at markers", () => {
-    expect(CLIMATE_FIXTURE.source_url.startsWith("mock://")).toBe(true);
-    expect(WEATHER_FIXTURE.source_url.startsWith("mock://")).toBe(true);
-    expect(RIVER_FIXTURE.source_url.startsWith("mock://")).toBe(true);
-    expect(FIXTURE_CAPTURED_AT).toMatch(/Z$/);
     for (const source of SOURCES_FIXTURE) {
       expect(source.url.startsWith("mock://")).toBe(true);
-      expect(source.captured_at).toBe(FIXTURE_CAPTURED_AT);
+      expect(source.methodology_url.startsWith("mock://")).toBe(true);
+      expect(source.captured_at).toMatch(/Z$/);
     }
-  });
-
-  it("preserves nulls instead of coercing them to zero", () => {
-    expect(CLIMATE_NULL_PROBE.phase_probability_pct).toBeNull();
-    expect(CLIMATE_NULL_PROBE.observed_nino34_c).toBeNull();
-    expect(WEATHER_NULL_PROBE.precip_expected_mm).toBeNull();
-    expect(WEATHER_NULL_PROBE.precip_probability_pct).toBeNull();
-    expect(WEATHER_NULL_PROBE.forecast_window_start).toBeNull();
-    expect(RIVER_NULL_PROBE.level_m).toBeNull();
-    expect(RIVER_NULL_PROBE.alert_reference_m).toBeNull();
-    expect(RIVER_NULL_PROBE.trend).toBe("unknown");
   });
 });
 
@@ -97,5 +53,13 @@ describe("report fixtures", () => {
       (report) => report.editorial_status === "VERIFIED_EDITORIALLY",
     );
     expect(verified.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("keeps the report with the latest created_at first", () => {
+    const timestamps = REPORTS_FIXTURE.map((report) =>
+      new Date(report.created_at).getTime(),
+    );
+    const latest = Math.max(...timestamps);
+    expect(new Date(REPORTS_FIXTURE[0].created_at).getTime()).toBe(latest);
   });
 });

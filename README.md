@@ -1,10 +1,11 @@
 # Pulso Formosa
 
 Public civic-reporting site for the province of Formosa, Argentina. Two public
-routes: `/` (observe climate, river and citizen reports) and `/reportar`
-(anonymous incident report).
+routes: `/` (map-first home — report pins on a map, a detail panel with
+navigation, and community solutions) and `/reportar` (anonymous incident
+report).
 
-> **Mock data — development only.** All climate, river and report data served by
+> **Mock data — development only.** All report and solution data served by
 > this iteration is visibly labelled fixture data (`Dato de prueba — mock de
 > desarrollo`). Fixture providers refuse to run when
 > `PUBLIC_ENVIRONMENT_LABEL=production`.
@@ -66,12 +67,13 @@ taskkill //PID <pid> //F //T
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript strict · Tailwind CSS v4 ·
-shadcn-style primitives · MapLibre placeholder (cartography in C1B-b) ·
+shadcn-style primitives · MapLibre GL JS (`maplibre-gl`, client-only with a
+bundled fallback style — `NEXT_PUBLIC_MAP_STYLE_URL` for a real basemap) ·
 Neon + Drizzle seam (schema in C2) · Vitest · Playwright · axe-core.
 
 ## Data policy
 
-Citizen reports, forecasts, official observations and editorial verification are
-never merged into one confidence level. Every climate figure carries variable,
-unit, timeframe and source. Null values stay null and render as “Sin dato” —
-never `0`.
+Citizen reports, community solutions and editorial verification are never
+merged into one confidence level. A report shows "Resuelto" only when at
+least one of its solutions is approved. Null values stay null and render as
+“Sin dato” — never `0`.
