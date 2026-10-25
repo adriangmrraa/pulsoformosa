@@ -21,10 +21,11 @@ interface IncidentMapProps {
 }
 
 /**
- * Map hero: bounded to the published reports, ~52dvh so the detail panel is
- * visible without scrolling. The MapLibre canvas is client-only; the overlay
- * texture lives on .map-hero-frame::after — ancestors animate opacity only
- * (iOS Safari WebGL incident rule, INCIDENTE-MAPA-iOS-SAFARI.md).
+ * Map hero: compact bounded frame (demobondis home-map-frame pattern) so the
+ * selected report card stays above the fold. The MapLibre canvas is
+ * client-only; the overlay texture lives on .map-hero-frame::after — ancestors
+ * animate opacity only (iOS Safari WebGL incident rule,
+ * INCIDENTE-MAPA-iOS-SAFARI.md).
  */
 export function IncidentMap({
   pins,
@@ -33,20 +34,19 @@ export function IncidentMap({
   onSelect,
 }: IncidentMapProps) {
   return (
-    <section
-      aria-label="Mapa de reportes"
-      className="map-hero-frame relative border-y border-border/70 bg-surface/35"
-    >
-      <div className="h-[52dvh] min-h-[320px] w-full">
-        <MapCanvas
-          pins={pins}
-          bounds={bounds}
-          selectedId={selectedId}
-          onSelect={onSelect}
-        />
-      </div>
-      <div className="border-t border-border/60 px-4 py-2.5 sm:px-6">
-        <MapLegend />
+    <section aria-label="Mapa de reportes" className="container-page">
+      <div className="map-hero-frame relative overflow-hidden rounded-3xl border border-border/70 bg-surface/35">
+        <div className="h-[190px] w-full sm:h-[240px] lg:h-[300px]">
+          <MapCanvas
+            pins={pins}
+            bounds={bounds}
+            selectedId={selectedId}
+            onSelect={onSelect}
+          />
+        </div>
+        <div className="border-t border-border/60 px-3 py-1.5">
+          <MapLegend />
+        </div>
       </div>
     </section>
   );

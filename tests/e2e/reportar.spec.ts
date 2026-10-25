@@ -82,6 +82,9 @@ test("the optional expected-solution field accepts text and submits", async ({
   await page
     .getByLabel("Descripción")
     .fill("Agua acumulada sobre la calle desde anoche.");
+  // Manual entry stays closed until the user asks for it — the Latitud and
+  // Longitud fields only render after opening it.
+  await page.getByRole("button", { name: "Marcar en mapa" }).click();
   await page.getByLabel("Latitud").fill("-26.18");
   await page.getByLabel("Longitud").fill("-58.18");
   await page.getByRole("button", { name: "Confirmar ubicación" }).click();

@@ -189,6 +189,9 @@ body {
 
 /* DOM map pins: real <button> elements, >=44px targets, status-colored. */
 .report-pin {
+  /* Keep pin centers clear of the sticky site header when scrolled into
+     view (Playwright click targets / keyboard focus both rely on it). */
+  scroll-margin-top: 84px;
   width: 44px;
   height: 44px;
   display: inline-flex;

@@ -121,7 +121,7 @@ export function ReportExplorer({
   );
 
   return (
-    <div>
+    <div className="flex flex-col gap-2.5">
       <IncidentMap
         pins={pins}
         bounds={bounds}

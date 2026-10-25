@@ -127,19 +127,21 @@ export default async function HomePage({
   return (
     <>
       <HydrationMarker />
-      <div className="container-page pt-5 md:pt-7">
-        <div className="max-w-4xl">
-          <h1 className="max-w-3xl text-3xl font-semibold leading-[1.05] tracking-tight sm:text-4xl">
-            Esto se está reportando en Formosa
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-text-secondary sm:text-base">
-            Reportes de vecinos sobre el mapa de la ciudad. Tocá un punto para
-            ver el detalle y las soluciones aportadas.
-          </p>
-        </div>
+      <div className="container-page pt-4">
+        <h1 className="text-[22px] font-bold leading-tight tracking-tight sm:text-2xl">
+          Esto se está reportando en Formosa
+        </h1>
+        <p className="mt-0.5 text-sm text-text-secondary">
+          Reportes de vecinos sobre el mapa de la ciudad. Tocá un punto para ver
+          el detalle.
+        </p>
       </div>
 
-      <div className="mt-4">
+      <div className="container-page mt-2.5">
+        <FilterChips active={query.categoria} activeSubtype={query.subtipo} />
+      </div>
+
+      <div className="mt-2.5">
         <ReportExplorer
           reports={selectionDataset}
           solutions={solutions}
@@ -152,26 +154,22 @@ export default async function HomePage({
         <section
           id="lista-reportes"
           aria-labelledby="lista-reportes-title"
-          className="mt-8"
+          className="mt-6"
         >
-          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2
                 id="lista-reportes-title"
-                className="text-2xl font-semibold tracking-tight"
+                className="text-xl font-bold tracking-tight"
               >
                 Reportes recientes
               </h2>
-              <p className="mt-1 text-xs text-text-secondary">
+              <p className="mt-0.5 text-xs text-text-secondary">
                 {reportPage.total} reportes públicos en{" "}
                 {PERIOD_LABELS[query.periodo]}
               </p>
             </div>
             <TimeRangeSelector value={query.periodo} />
-          </div>
-
-          <div className="mt-3">
-            <FilterChips active={query.categoria} activeSubtype={query.subtipo} />
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -202,8 +200,8 @@ export default async function HomePage({
           <Pagination nextHref={nextHref} />
         </section>
 
-        <section aria-labelledby="fuentes-title" className="mt-10">
-          <h2 id="fuentes-title" className="text-xl font-semibold">
+        <section aria-labelledby="fuentes-title" className="mt-8">
+          <h2 id="fuentes-title" className="text-lg font-bold">
             Fuentes y metodología
           </h2>
           <p className="mt-2 max-w-prose text-sm text-text-secondary">

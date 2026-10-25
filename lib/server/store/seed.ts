@@ -1,4 +1,5 @@
 import type { Solution } from "@/lib/domain/solution";
+import { generalizeCoordinate } from "@/lib/domain/geo";
 import {
   FIXTURE_ZONES,
   HIDDEN_REPORT_FIXTURE,
@@ -30,10 +31,21 @@ export function buildSeedData(): SeedData {
   return {
     // The hidden fixture ships too: reads must keep filtering it out, which
     // the public-only coverage proves on every run.
-    reports: [...REPORTS_FIXTURE, HIDDEN_REPORT_FIXTURE].map((report) => ({
-      ...report,
-      submission_id: null,
-    })),
+    reports: [...REPORTS_FIXTURE, HIDDEN_REPORT_FIXTURE].map((report) => {
+      // Seed rows must look exactly like ingested ones: the ~250 m public grid
+      // is applied at ingest, never at read time, so fixtures get snapped here.
+      const { lat, lon } = generalizeCoordinate(
+        report.geometry.coordinates[1],
+        report.geometry.coordinates[0],
+      );
+      return {
+        ...report,
+        geometry: { ...report.geometry, coordinates: [lon, lat] },
+        lat,
+        lon,
+        submission_id: null,
+      };
+    }),
     solutions: SOLUTIONS_FIXTURE.map((solution) => ({ ...solution })),
     moderation_events: [],
   };

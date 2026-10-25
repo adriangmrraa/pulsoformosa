@@ -74,6 +74,9 @@ test("interactive controls meet the 44px comfort target", async ({ page }) => {
 test("map pins expose status-derived accessible names", async ({ page }) => {
   await gotoHydrated(page, "/?periodo=30d");
   const pins = page.locator("[data-report-pin]");
+  // Markers attach after the MapLibre canvas loads — wait for the first
+  // before counting, otherwise the assertion races hydration.
+  await expect(pins.first()).toBeAttached();
   const count = await pins.count();
   expect(count).toBeGreaterThan(0);
 

@@ -1,4 +1,10 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import { isPublicEditorialStatus } from "@/lib/domain/taxonomy";
 import type { PublicReport } from "@/lib/domain/report";
@@ -47,6 +53,7 @@ export class JsonReportStore implements ReportStore {
   readonly backend = "json" as const;
   private readonly filePath: string;
   private data: StoreFile | null = null;
+  private mtimeMs = 0;
   private queue: Promise<unknown> = Promise.resolve();
 
   constructor(dir?: string) {
@@ -59,7 +66,24 @@ export class JsonReportStore implements ReportStore {
   }
 
   private load(): StoreFile {
-    if (this.data) return this.data;
+    // The file is the source of truth: page renders and route handlers can be
+    // instantiated in separate module realms (the e2e persistence suite caught
+    // writes via POST /api/reportes never reaching a later page render), so a
+    // changed mtime forces a re-read instead of serving stale memory.
+    const stat = statSync(this.filePath, { throwIfNoEntry: false });
+    if (this.data) {
+      if (!stat || stat.mtimeMs === this.mtimeMs) return this.data;
+      try {
+        const fresh = JSON.parse(readFileSync(this.filePath, "utf8")) as StoreFile;
+        if (fresh.version === 1) {
+          this.data = fresh;
+          this.mtimeMs = stat.mtimeMs;
+        }
+      } catch {
+        // A torn write leaves this.data intact; the next load retries.
+      }
+      return this.data;
+    }
 
     let parsed: StoreFile | null = null;
     try {
@@ -70,6 +94,7 @@ export class JsonReportStore implements ReportStore {
 
     if (parsed && parsed.version === 1) {
       this.data = parsed;
+      this.mtimeMs = stat?.mtimeMs ?? 0;
       return parsed;
     }
 
@@ -91,6 +116,7 @@ export class JsonReportStore implements ReportStore {
     const tmp = `${this.filePath}.tmp-${process.pid}`;
     writeFileSync(tmp, `${JSON.stringify(data, null, 2)}\n`, "utf8");
     renameSync(tmp, this.filePath);
+    this.mtimeMs = statSync(this.filePath).mtimeMs;
   }
 
   /** Serializes read-modify-write cycles so concurrent handlers never race. */

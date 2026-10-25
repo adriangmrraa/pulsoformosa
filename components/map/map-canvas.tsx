@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { FALLBACK_MAP_STYLE } from "@/lib/maps/fallback-style";
@@ -18,6 +18,15 @@ interface MapCanvasProps {
 }
 
 const FIT_PADDING = { top: 56, bottom: 56, left: 56, right: 56 };
+
+/** Pin hit area: 44px buttons. Centers closer than this overlap → the top
+ *  marker swallows the click of the covered one (regression seen in e2e and
+ *  on real devices once reports share a ~250m generalization cell). */
+const PIN_SEPARATION_PX = 50;
+/** Keep every decluttered pin fully inside the map: the frame clips markers
+ *  at its rounded border, so a pin pushed past the edge looks half-visible
+ *  but its center lands on the header above and can't be clicked. */
+const PIN_EDGE_MARGIN_PX = 24;
 
 function webglAvailable(): boolean {
   try {
@@ -69,11 +78,73 @@ function RealMap({
   const elementsRef = useRef(new Map<string, HTMLButtonElement>());
   const onSelectRef = useRef(onSelect);
   const boundsRef = useRef(bounds);
+  const pinsRef = useRef(pins);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
     boundsRef.current = bounds;
+    pinsRef.current = pins;
   });
+
+  /**
+   * Screen-space declutter: pins whose projected centers sit within one hit
+   * area are spread on a small ring around their shared spot, so every report
+   * stays individually tappable. Deterministic order (pin id) keeps offsets
+   * stable across re-renders.
+   */
+  const declutterPins = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const projected = pinsRef.current
+      .map((pin) => {
+        const point = map.project([pin.lon, pin.lat]);
+        return { id: pin.id, x: point.x, y: point.y };
+      })
+      .sort((a, b) => (a.id < b.id ? -1 : 1));
+
+    // Greedy clustering: a pin joins the first leader whose projected center
+    // sits within one hit diameter; the rest form their own groups.
+    const groups: { id: string; x: number; y: number }[][] = [];
+    const heads: { x: number; y: number }[] = [];
+    for (const pin of projected) {
+      const groupIndex = heads.findIndex(
+        (head) => Math.hypot(pin.x - head.x, pin.y - head.y) < PIN_SEPARATION_PX,
+      );
+      if (groupIndex === -1) {
+        heads.push({ x: pin.x, y: pin.y });
+        groups.push([pin]);
+      } else {
+        groups[groupIndex].push(pin);
+      }
+    }
+
+    const { clientWidth: width, clientHeight: height } = map.getContainer();
+    const clampInside = (value: number, max: number) =>
+      Math.min(Math.max(value, PIN_EDGE_MARGIN_PX), max - PIN_EDGE_MARGIN_PX);
+
+    for (const members of groups) {
+      const n = members.length;
+      const radius =
+        n === 1
+          ? 0
+          : n === 2
+            ? PIN_SEPARATION_PX / 2
+            : PIN_SEPARATION_PX / (2 * Math.sin(Math.PI / n));
+      members.forEach((pin, i) => {
+        const angle = (2 * Math.PI * i) / n - Math.PI / 2;
+        let offsetX = Math.round(radius * Math.cos(angle));
+        let offsetY = Math.round(radius * Math.sin(angle));
+        // Only clamp pins that project inside the map — an off-screen pin
+        // must keep its true edge position instead of faking an in-map spot.
+        if (pin.x >= 0 && pin.x <= width && pin.y >= 0 && pin.y <= height) {
+          offsetX = Math.round(clampInside(pin.x + offsetX, width) - pin.x);
+          offsetY = Math.round(clampInside(pin.y + offsetY, height) - pin.y);
+        }
+        markersRef.current.get(pin.id)?.setOffset([offsetX, offsetY]);
+      });
+    }
+  }, []);
 
   // Mount once. Any failure to create the WebGL context surfaces through
   // onFailure and the home falls back to the pin list — never an empty hero.
@@ -105,7 +176,14 @@ function RealMap({
         maxZoom: 14,
         duration: 0,
       });
+      declutterPins();
     });
+    // Camera motion re-projects every pin — recompute separation when it
+    // ends. `idle` covers the last settle as well: WebKit can finish an
+    // easeTo without a final moveend, leaving stale cluster offsets.
+    map.on("moveend", declutterPins);
+    map.on("zoomend", declutterPins);
+    map.on("idle", declutterPins);
     map.on("error", () => {
       // A missing remote style degrades to the embedded fallback rather
       // than leaving a blank canvas.
@@ -119,6 +197,9 @@ function RealMap({
     });
 
     return () => {
+      map.off("moveend", declutterPins);
+      map.off("zoomend", declutterPins);
+      map.off("idle", declutterPins);
       for (const marker of markers.values()) marker.remove();
       markers.clear();
       elements.clear();
@@ -160,7 +241,9 @@ function RealMap({
         elementsRef.current.delete(id);
       }
     }
-  }, [pins]);
+
+    declutterPins();
+  }, [pins, declutterPins]);
 
   // Selection focus: recenter without layout jumps; jump when reduced motion.
   useEffect(() => {

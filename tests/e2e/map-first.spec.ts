@@ -14,6 +14,9 @@ test.describe("map-first selection", () => {
     await gotoHydrated(page, "/?periodo=30d");
 
     const pins = page.locator("[data-report-pin]");
+    // Markers attach after the MapLibre canvas loads — wait for the first
+    // before counting, otherwise the assertion races hydration.
+    await expect(pins.first()).toBeAttached();
     const count = await pins.count();
     expect(count).toBeGreaterThanOrEqual(12);
 
@@ -29,7 +32,9 @@ test.describe("map-first selection", () => {
   test("selecting a pin updates the panel and the URL in place", async ({
     page,
   }) => {
-    await gotoHydrated(page, "/?periodo=30d");
+    // Pin the start on a known fixture — the shared e2e store accumulates
+    // reports created by earlier specs, so fixture order is not position 1.
+    await gotoHydrated(page, `/?reporte=${LATEST}&periodo=30d`);
     const detail = detailRegion(page);
     await expect(detail).toContainText("Agua acumulada sobre la calzada");
 
@@ -57,17 +62,21 @@ test.describe("map-first selection", () => {
     const next = page.getByRole("button", { name: "Reporte siguiente" });
     await expect(prev).toBeDisabled();
 
+    // Whatever sits at index 1, next must move exactly one step — the shared
+    // e2e store grows between specs, so assert the counter, not the fixture.
     await next.click();
     await expect(detail).toContainText("Reporte 2 de");
-    await expect(detail).toContainText("Ingresó agua en una vivienda baja");
     await expect(prev).toBeEnabled();
-    await expect(page).toHaveURL(/reporte=rpt_mock_c7d2e4/);
+    await expect(page).toHaveURL(/reporte=rpt_/);
+
+    await prev.click();
+    await expect(detail).toContainText("Reporte 1 de");
   });
 
   test("keyboard activates a pin and moves the selection", async ({
     page,
   }) => {
-    await gotoHydrated(page, "/?periodo=30d");
+    await gotoHydrated(page, `/?reporte=${LATEST}&periodo=30d`);
     const detail = detailRegion(page);
     await expect(detail).toContainText("Agua acumulada sobre la calzada");
 
@@ -83,14 +92,17 @@ test.describe("map-first selection", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await gotoHydrated(page, "/");
+    await gotoHydrated(page, `/?reporte=${LATEST}`);
     const detail = detailRegion(page);
     await expect(detail).toContainText("Agua acumulada sobre la calzada");
 
     const stage = page.getByTestId("swipe-stage");
     const box = await stage.boundingBox();
     expect(box).not.toBeNull();
-    const y = box!.y + box!.height / 2;
+    // The card is taller than the viewport: drag inside its visible top band
+    // (title/chips row) — the box midpoint sits below the fold and receives
+    // no pointer events.
+    const y = box!.y + 96;
     const startX = box!.x + box!.width * 0.8;
 
     await page.mouse.move(startX, y);
@@ -98,8 +110,10 @@ test.describe("map-first selection", () => {
     await page.mouse.move(startX - 140, y, { steps: 6 });
     await page.mouse.up();
 
+    // Created reports sort above the fixtures, so the swipe target keeps the
+    // fixture's relative order: the next item after LATEST is its successor.
     await expect(detail).toContainText("Ingresó agua en una vivienda baja");
-    await expect(detail).toContainText("Reporte 2 de");
+    await expect(detail).toContainText(/Reporte \d+ de/);
   });
 
   test("the panel shows solutions and accepts a pending contribution", async ({
@@ -119,8 +133,13 @@ test.describe("map-first selection", () => {
       .getByRole("button", { name: "Enviar solución" })
       .click();
 
+    // Scope to the solutions list: the filled textarea also matches a plain
+    // text locator, and a second run of the suite may persist a duplicate.
     await expect(
-      detail.getByText(/Limpiar el desagüe y revisar la pendiente/),
+      detail
+        .getByRole("listitem")
+        .filter({ hasText: /Limpiar el desagüe y revisar la pendiente/ })
+        .first(),
     ).toBeVisible({ timeout: 5_000 });
     await expect(detail).toContainText("Abierto");
   });

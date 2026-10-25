@@ -13,7 +13,18 @@ export type {
   StoredReport,
 } from "./types";
 
-let cached: Promise<ReportStore> | null = null;
+/**
+ * The store is shared by route handlers AND page renders. Turbopack
+ * instantiates this module in each server context, so a plain module-level
+ * variable produced two independent stores: writes through the API never
+ * reached the page's cached dataset (persistence e2e regression — deep links
+ * to fresh reports stayed on "Reporte 1 de N"). The cache therefore lives on
+ * globalThis, which is shared by every module instance in the process.
+ */
+declare global {
+  // eslint-disable-next-line no-var
+  var __pulsoReportStore: Promise<ReportStore> | undefined;
+}
 
 async function initStore(): Promise<ReportStore> {
   if (process.env.DATABASE_URL?.trim()) {
@@ -45,16 +56,19 @@ async function initStore(): Promise<ReportStore> {
  * to serve (the JSON dev store throws the same way the mock provider did).
  */
 export async function getStore(): Promise<ReportStore> {
-  if (!cached) {
-    cached = initStore();
-    cached.catch(() => {
-      cached = null;
+  if (!globalThis.__pulsoReportStore) {
+    const pending = initStore();
+    globalThis.__pulsoReportStore = pending;
+    pending.catch(() => {
+      if (globalThis.__pulsoReportStore === pending) {
+        globalThis.__pulsoReportStore = undefined;
+      }
     });
   }
-  return cached;
+  return globalThis.__pulsoReportStore;
 }
 
 /** Test seam: drops the memoized store so PULSO_DATA_DIR changes take effect. */
 export function resetStoreForTests(): void {
-  cached = null;
+  globalThis.__pulsoReportStore = undefined;
 }

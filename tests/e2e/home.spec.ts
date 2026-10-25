@@ -13,7 +13,10 @@ test.describe("home", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoHydrated(page, "/");
+    // Deep-link to a fixture: persistence specs run before this one under the
+    // shared e2e store, so the newest seeded report is no longer index 1 —
+    // the assertion below checks composition, not dataset order.
+    await gotoHydrated(page, "/?reporte=rpt_mock_9f3a1b");
 
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Esto se está reportando en Formosa",
@@ -42,9 +45,9 @@ test.describe("home", () => {
     expect(positions.panel).toBeLessThan(positions.list);
     expect(positions.list).toBeLessThan(positions.sources);
 
-    // The latest fixture report is selected by default.
+    // The deep-linked fixture report renders in the detail panel.
     await expect(detail).toContainText("Agua acumulada sobre la calzada");
-    await expect(detail).toContainText("Reporte 1 de");
+    await expect(detail).toContainText(/Reporte \d+ de/);
 
     await expect(
       page.getByText("Dato de prueba — mock de desarrollo").first(),
@@ -61,6 +64,10 @@ test.describe("home", () => {
     await page.screenshot({
       path: `${SNAPSHOTS}/home-1440x900.png`,
       fullPage: true,
+      // CSS scale keeps the capture surface at 1x — deviceScaleFactor 2.6
+      // turns a full-page shot into a ~40MP bitmap and the protocol call OOMs
+      // under memory pressure (mobile-chromium flake).
+      scale: "css",
     });
   });
 
@@ -74,6 +81,10 @@ test.describe("home", () => {
     await page.screenshot({
       path: `${SNAPSHOTS}/home-1280x900.png`,
       fullPage: true,
+      // CSS scale keeps the capture surface at 1x — deviceScaleFactor 2.6
+      // turns a full-page shot into a ~40MP bitmap and the protocol call OOMs
+      // under memory pressure (mobile-chromium flake).
+      scale: "css",
     });
   });
 
@@ -86,6 +97,10 @@ test.describe("home", () => {
     await page.screenshot({
       path: `${SNAPSHOTS}/home-390x844.png`,
       fullPage: true,
+      // CSS scale keeps the capture surface at 1x — deviceScaleFactor 2.6
+      // turns a full-page shot into a ~40MP bitmap and the protocol call OOMs
+      // under memory pressure (mobile-chromium flake).
+      scale: "css",
     });
 
     const overflow = await page.evaluate(
