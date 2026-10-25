@@ -8,7 +8,7 @@ test.beforeAll(() => {
   mkdirSync(SNAPSHOTS, { recursive: true });
 });
 
-test("denied geolocation falls back to manual entry and the fake submit confirms", async ({
+test("denied geolocation falls back to manual entry and the real submit persists", async ({
   page,
   context,
 }) => {
@@ -49,8 +49,12 @@ test("denied geolocation falls back to manual entry and the fake submit confirms
   await expect(
     page.getByRole("heading", { name: "Recibimos tu reporte" }),
   ).toBeVisible({ timeout: 5_000 });
-  await expect(page.getByText("En revisión", { exact: true })).toBeVisible();
-  await expect(page.getByText(/pub_mock_/)).toBeVisible();
+  await expect(
+    page.getByText(
+      "Publicado como aporte de un vecino; todavía no verificado",
+    ),
+  ).toBeVisible();
+  await expect(page.getByText(/rpt_[0-9a-f]{10}/)).toBeVisible();
   await expect(
     page.getByText(
       "Esto no es un servicio de emergencias ni una denuncia formal ante una autoridad.",
@@ -61,6 +65,32 @@ test("denied geolocation falls back to manual entry and the fake submit confirms
     path: `${SNAPSHOTS}/reportar-confirmacion-390x844.png`,
     fullPage: true,
   });
+});
+
+test("the optional expected-solution field accepts text and submits", async ({
+  page,
+}) => {
+  await gotoHydrated(page, "/reportar");
+
+  const field = page.getByLabel("¿Cómo se solucionaría? (opcional)");
+  await expect(field).toBeVisible();
+
+  await field.fill("Desagüe pluvial nuevo en la esquina de la plaza.");
+  await expect(page.getByText("48/280")).toBeVisible();
+
+  await page.getByRole("radio", { name: "Agua y anegamientos" }).click();
+  await page
+    .getByLabel("Descripción")
+    .fill("Agua acumulada sobre la calle desde anoche.");
+  await page.getByLabel("Latitud").fill("-26.18");
+  await page.getByLabel("Longitud").fill("-58.18");
+  await page.getByRole("button", { name: "Confirmar ubicación" }).click();
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Enviar reporte" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Recibimos tu reporte" }),
+  ).toBeVisible({ timeout: 5_000 });
 });
 
 test("the report page is reachable and captures a mobile snapshot", async ({

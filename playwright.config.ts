@@ -1,4 +1,8 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+import { E2E_MODERATOR_TOKEN } from "./tests/e2e/env";
 
 /**
  * E2E runs only against a production build (REQ-TST-04): the default webServer
@@ -14,6 +18,11 @@ const shouldStartWebServer = process.env.E2E_NO_WEBSERVER !== "1";
 const webServerCommand =
   process.env.E2E_WEB_SERVER_COMMAND ??
   `npm run build && npx next start -p ${PORT}`;
+
+// Fresh JSON store per run: real persistence exercised end to end while the
+// suite stays offline-deterministic. DATABASE_URL is explicitly emptied so a
+// local .env.local can never route e2e traffic to Neon.
+const e2eDataDir = mkdtempSync(path.join(tmpdir(), "pulso-e2e-data-"));
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -64,6 +73,10 @@ export default defineConfig({
         env: {
           PUBLIC_ENVIRONMENT_LABEL: "development",
           APP_BASE_URL: baseURL,
+          DATABASE_URL: "",
+          PULSO_DATA_DIR: e2eDataDir,
+          PULSO_SEED_DEMO: "1",
+          MODERATOR_TOKEN: E2E_MODERATOR_TOKEN,
         },
       }
     : undefined,

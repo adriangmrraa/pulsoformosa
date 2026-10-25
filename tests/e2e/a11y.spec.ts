@@ -70,3 +70,24 @@ test("interactive controls meet the 44px comfort target", async ({ page }) => {
     expect(tooSmall).toEqual([]);
   }
 });
+
+test("map pins expose status-derived accessible names", async ({ page }) => {
+  await gotoHydrated(page, "/?periodo=30d");
+  const pins = page.locator("[data-report-pin]");
+  const count = await pins.count();
+  expect(count).toBeGreaterThan(0);
+
+  for (let index = 0; index < count; index += 1) {
+    const label = await pins.nth(index).getAttribute("aria-label");
+    expect(label).toMatch(/Reporte rpt_\w+ — (Abierto|Resuelto)/);
+  }
+});
+
+test("the detail panel announces its position politely", async ({ page }) => {
+  await gotoHydrated(page, "/");
+  const live = page
+    .getByRole("region", { name: "Detalle del reporte" })
+    .locator("[aria-live='polite']")
+    .first();
+  await expect(live).toContainText(/Reporte \d+ de \d+/);
+});

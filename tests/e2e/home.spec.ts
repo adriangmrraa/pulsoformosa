@@ -9,43 +9,54 @@ test.beforeAll(() => {
 });
 
 test.describe("home", () => {
-  test("traverses every section and shows the mock badge", async ({ page }) => {
+  test("leads with the map hero, then the detail panel, then the list", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await gotoHydrated(page, "/");
 
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Esto se está reportando en Formosa",
     );
-    await expect(page.getByText("Para entenderlo rápido")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Contexto ENSO" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Próximas lluvias" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Río Paraguay — Puerto Formosa" }),
-    ).toBeVisible();
-    await expect(
-      page.getByText("Mapa de reportes — próximamente con cartografía provincial"),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Ver la lista de reportes" }),
-    ).toHaveAttribute("href", "#lista-reportes");
-    await expect(
-      page.getByRole("heading", { name: "Reportes recientes" }),
-    ).toBeVisible();
+
+    const map = page.getByRole("region", { name: "Mapa de reportes" });
+    const detail = page.getByRole("region", { name: "Detalle del reporte" });
+    const list = page.getByRole("heading", { name: "Reportes recientes" });
+
+    await expect(map).toBeVisible();
+    await expect(detail).toBeVisible();
+    await expect(list).toBeVisible();
+
+    // Render order: map → panel → list → sources.
+    const positions = await page.evaluate(() => {
+      const el = (selector: string) =>
+        document.querySelector(selector)?.getBoundingClientRect().top ?? 0;
+      return {
+        map: el('[aria-label="Mapa de reportes"]'),
+        panel: el('[aria-label="Detalle del reporte"]'),
+        list: el("#lista-reportes"),
+        sources: el("#fuentes-title"),
+      };
+    });
+    expect(positions.map).toBeLessThan(positions.panel);
+    expect(positions.panel).toBeLessThan(positions.list);
+    expect(positions.list).toBeLessThan(positions.sources);
+
+    // The latest fixture report is selected by default.
+    await expect(detail).toContainText("Agua acumulada sobre la calzada");
+    await expect(detail).toContainText("Reporte 1 de");
+
     await expect(
       page.getByText("Dato de prueba — mock de desarrollo").first(),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Fuentes y metodología" }),
     ).toBeVisible();
-    await expect(
-      page.getByText(
-        "Probabilidad de fase El Niño: no representa probabilidad de inundación en tu barrio.",
-      ),
-    ).toBeVisible();
+
+    // Climate content is gone from the home render.
+    await expect(page.getByText(/ENSO|El Niño|Próximas lluvias/)).toHaveCount(
+      0,
+    );
 
     await page.screenshot({
       path: `${SNAPSHOTS}/home-1440x900.png`,
@@ -66,7 +77,9 @@ test.describe("home", () => {
     });
   });
 
-  test("renders at mobile width without horizontal scroll", async ({ page }) => {
+  test("renders at mobile width without horizontal scroll", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoHydrated(page, "/");
 
