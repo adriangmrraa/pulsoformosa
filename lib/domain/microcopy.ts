@@ -39,6 +39,15 @@ export const CONFIRMATION_DISCLAIMER =
 // §8.6.1 legend
 export const MAP_LEGEND = "Reportado por vecinos / No verificado";
 
+// §11.3 community solutions (derived status + contribution copy)
+export const STATUS_OPEN = "Abierto";
+export const STATUS_SOLVED = "Resuelto";
+export const SOLUTIONS_TITLE = "Soluciones vecinales";
+export const SOLUTION_PENDING_LABEL = "pendiente de revisión";
+export const EXPECTED_SOLUTION_TITLE = "Solución esperada";
+export const SOLUTIONS_DATA_WARNING =
+  "Aporte vecinal: no compartas datos personales de terceros en tu solución.";
+
 // report cards / detail
 export const NO_PHOTO = "Sin foto disponible";
 export const LOCATION_MARKED_BY_YOU = "Ubicación marcada por vos";

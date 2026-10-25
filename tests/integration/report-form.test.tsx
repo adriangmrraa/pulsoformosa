@@ -110,6 +110,57 @@ describe("ReportForm validation", () => {
     expect(screen.queryByLabelText(/email|correo/i)).toBeNull();
     expect(screen.queryByLabelText(/teléfono/i)).toBeNull();
   });
+
+  it("renders the optional expected-solution field right after description", () => {
+    render(<ReportForm />);
+    const field = screen.getByLabelText("¿Cómo se solucionaría? (opcional)");
+    expect(field).toBeInTheDocument();
+
+    const description = screen.getByLabelText("Descripción");
+    const position = description.compareDocumentPosition(field);
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("shows a friendly counter for the expected-solution field", () => {
+    render(<ReportForm />);
+    const field = screen.getByLabelText("¿Cómo se solucionaría? (opcional)");
+    fireEvent.change(field, { target: { value: "Asfalto." } });
+    expect(screen.getByText("8/280")).toBeInTheDocument();
+  });
+
+  it("rejects an expected solution beyond 280 characters on submit", () => {
+    render(<ReportForm />);
+    pickCategory();
+    setDescription("Agua acumulada sobre la calle desde anoche.");
+    setManualLocation();
+    fireEvent.change(
+      screen.getByLabelText("¿Cómo se solucionaría? (opcional)"),
+      { target: { value: "a".repeat(281) } },
+    );
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Enviar reporte" }));
+    expect(
+      screen.getByText(
+        "La solución esperada no puede superar los 280 caracteres.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Reporte enviado" }),
+    ).toBeNull();
+  });
+
+  it("submits successfully with the expected-solution field empty", async () => {
+    render(<ReportForm />);
+    pickCategory();
+    setDescription("Agua acumulada sobre la calle desde anoche.");
+    setManualLocation();
+    fireEvent.click(screen.getByRole("checkbox"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Enviar reporte" }));
+    expect(
+      await screen.findByText(CONFIRMATION_TITLE, {}, { timeout: 3000 }),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("ReportForm fake submit", () => {

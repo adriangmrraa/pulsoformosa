@@ -14,6 +14,8 @@
   --color-alerta-moderada: #f4b25f;
   --color-alerta-alta: #e76b6b;
   --color-exito: #67c5a8;
+  /* map-first: solved reports/pins. Exact spec value — do not reuse exito. */
+  --color-accent-green: #059669;
 
   /* Semantic aliases consumed by the generated primitives. They map back to
      the §8.3 palette; do not introduce a second color system. */

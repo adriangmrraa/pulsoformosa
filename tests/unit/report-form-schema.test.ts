@@ -67,4 +67,34 @@ describe("reportFormSchema", () => {
       reportFormSchema.safeParse({ ...validInput, location: undefined }).success,
     ).toBe(false);
   });
+
+  it("accepts a report without expected_solution (optional, null-safe)", () => {
+    const parsed = reportFormSchema.parse(validInput);
+    expect(parsed.expected_solution).toBeUndefined();
+  });
+
+  it("accepts expected_solution inside the 280 bound", () => {
+    const parsed = reportFormSchema.parse({
+      ...validInput,
+      expected_solution: "Desagüe pluvial nuevo en la esquina de la plaza.",
+    });
+    expect(parsed.expected_solution).toBe(
+      "Desagüe pluvial nuevo en la esquina de la plaza.",
+    );
+  });
+
+  it("rejects expected_solution beyond 280 characters", () => {
+    expect(
+      reportFormSchema.safeParse({
+        ...validInput,
+        expected_solution: "a".repeat(281),
+      }).success,
+    ).toBe(false);
+    expect(
+      reportFormSchema.safeParse({
+        ...validInput,
+        expected_solution: "a".repeat(280),
+      }).success,
+    ).toBe(true);
+  });
 });

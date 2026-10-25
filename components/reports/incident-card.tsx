@@ -1,7 +1,12 @@
 import Link from "next/link";
 import type { PublicReportCard } from "@/lib/domain/report";
+import type { DerivedReportStatus } from "@/lib/domain/solution";
 import { CATEGORY_LABELS, EDITORIAL_LABELS } from "@/lib/domain/taxonomy";
-import { NO_PHOTO } from "@/lib/domain/microcopy";
+import {
+  NO_PHOTO,
+  STATUS_OPEN,
+  STATUS_SOLVED,
+} from "@/lib/domain/microcopy";
 import { formatAbsoluteART, formatRelativeAge } from "@/lib/domain/time";
 import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import { ShareCopyButton } from "./share-copy-button";
@@ -11,10 +16,19 @@ interface IncidentCardProps {
   report: PublicReportCard;
   fixture: boolean;
   sharePath: string;
+  status: DerivedReportStatus;
+  solutionCount: number;
 }
 
-export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) {
+export function IncidentCard({
+  report,
+  fixture,
+  sharePath,
+  status,
+  solutionCount,
+}: IncidentCardProps) {
   const verified = report.editorial_status === "VERIFIED_EDITORIALLY";
+  const solved = status === "solved";
 
   return (
     <article className="reveal-up border-y border-border/60 border-l-2 border-l-accent-agua bg-card/35 p-4 sm:p-5">
@@ -31,6 +45,22 @@ export function IncidentCard({ report, fixture, sharePath }: IncidentCardProps) 
         >
           {EDITORIAL_LABELS[report.editorial_status]}
         </span>
+        <span
+          className={
+            solved
+              ? "rounded-full bg-accent-green/15 px-2.5 py-1 text-xs font-medium text-accent-green"
+              : "rounded-full bg-alerta-alta/15 px-2.5 py-1 text-xs font-medium text-alerta-alta"
+          }
+        >
+          {solved ? STATUS_SOLVED : STATUS_OPEN}
+        </span>
+        {solutionCount > 0 ? (
+          <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-text-secondary">
+            {solutionCount === 1
+              ? "1 solución"
+              : `${solutionCount} soluciones`}
+          </span>
+        ) : null}
         {fixture ? <DevMockBadge /> : null}
       </div>
 

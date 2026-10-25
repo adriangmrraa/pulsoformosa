@@ -4,12 +4,14 @@ import type {
   TimeRange,
 } from "@/lib/domain/types";
 import type { PublicReport } from "@/lib/domain/report";
+import type { Solution } from "@/lib/domain/solution";
 import {
   FIXTURE_REPORT_IDS,
   HIDDEN_REPORT_FIXTURE,
   REPORTS_FIXTURE,
   zoneLabelForId,
 } from "@/tests/fixtures/reports.fixture";
+import { SOLUTIONS_FIXTURE } from "@/tests/fixtures/solutions.fixture";
 import { isPublicEditorialStatus } from "@/lib/domain/taxonomy";
 import type { ReportsProvider } from "./types";
 
@@ -81,6 +83,11 @@ export class MockReportsProvider implements ReportsProvider {
       return null;
     }
     return report;
+  }
+
+  async listSolutions(reportIds: string[]): Promise<Solution[]> {
+    const wanted = new Set(reportIds);
+    return SOLUTIONS_FIXTURE.filter((item) => wanted.has(item.report_id));
   }
 }
 

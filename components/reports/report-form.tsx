@@ -40,6 +40,7 @@ interface Draft {
   category: ReportCategory | null;
   subtype: string | null;
   description: string;
+  expectedSolution: string;
   location: PickedLocation | null;
   method: LocationMethod | null;
   barrio: string;
@@ -49,6 +50,7 @@ const EMPTY_DRAFT: Draft = {
   category: null,
   subtype: null,
   description: "",
+  expectedSolution: "",
   location: null,
   method: null,
   barrio: "",
@@ -127,6 +129,10 @@ export function ReportForm() {
     } else if (draft.description.length > 800) {
       next.description = "La descripción no puede superar los 800 caracteres.";
     }
+    if (draft.expectedSolution.length > 280) {
+      next.expectedSolution =
+        "La solución esperada no puede superar los 280 caracteres.";
+    }
     if (!draft.location) {
       next.location = "Marcá una ubicación o usá tu ubicación actual.";
     }
@@ -147,6 +153,9 @@ export function ReportForm() {
       category: draft.category,
       subtype: draft.subtype ?? undefined,
       description: draft.description,
+      expected_solution: draft.expectedSolution.trim()
+        ? draft.expectedSolution
+        : undefined,
       location: {
         lat: draft.location.lat,
         lon: draft.location.lon,
@@ -225,6 +234,34 @@ export function ReportForm() {
         {errors.description ? (
           <p id="description-error" className="text-xs text-alerta-alta">
             {errors.description}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="solucion-esperada" className="text-sm font-medium">
+          ¿Cómo se solucionaría? (opcional)
+        </label>
+        <Textarea
+          id="solucion-esperada"
+          name="solucion-esperada"
+          value={draft.expectedSolution}
+          onChange={(event) => update({ expectedSolution: event.target.value })}
+          aria-describedby="expected-solution-help expected-solution-error"
+          aria-invalid={Boolean(errors.expectedSolution)}
+          maxLength={280}
+          rows={2}
+          placeholder="Ej.: que reparen el bache con material nuevo. Sin nombres ni teléfonos."
+        />
+        <p id="expected-solution-help" className="text-xs text-text-secondary">
+          Contanos qué resultado esperás ver. {DESCRIPTION_WARNING}
+        </p>
+        <p className="tabular text-xs text-text-secondary">
+          {draft.expectedSolution.length}/280
+        </p>
+        {errors.expectedSolution ? (
+          <p id="expected-solution-error" className="text-xs text-alerta-alta">
+            {errors.expectedSolution}
           </p>
         ) : null}
       </div>

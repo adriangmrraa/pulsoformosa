@@ -5,6 +5,8 @@ import {
   FIXTURE_REPORT_IDS,
   REPORTS_FIXTURE,
 } from "@/tests/fixtures/reports.fixture";
+import { SOLUTIONS_FIXTURE } from "@/tests/fixtures/solutions.fixture";
+import { deriveReportStatus } from "@/lib/domain/solution";
 import { isInsideFormosaBBox } from "@/lib/domain/geo";
 
 describe("source fixtures", () => {
@@ -61,5 +63,61 @@ describe("report fixtures", () => {
     );
     const latest = Math.max(...timestamps);
     expect(new Date(REPORTS_FIXTURE[0].created_at).getTime()).toBe(latest);
+  });
+
+  it("carries expected_solution on at least one report and null elsewhere", () => {
+    const withExpected = REPORTS_FIXTURE.filter(
+      (report) => report.expected_solution !== null,
+    );
+    const without = REPORTS_FIXTURE.filter(
+      (report) => report.expected_solution === null,
+    );
+    expect(withExpected.length).toBeGreaterThanOrEqual(1);
+    expect(without.length).toBeGreaterThanOrEqual(1);
+    for (const report of withExpected) {
+      expect(report.expected_solution!.length).toBeLessThanOrEqual(280);
+    }
+  });
+});
+
+describe("solution fixtures", () => {
+  it("only reference published fixture reports", () => {
+    const ids = new Set(FIXTURE_REPORT_IDS);
+    for (const item of SOLUTIONS_FIXTURE) {
+      expect(ids.has(item.report_id)).toBe(true);
+    }
+  });
+
+  it("includes at least one approved and one pending solution", () => {
+    expect(
+      SOLUTIONS_FIXTURE.some((item) => item.status === "approved"),
+    ).toBe(true);
+    expect(
+      SOLUTIONS_FIXTURE.some((item) => item.status === "pending"),
+    ).toBe(true);
+  });
+
+  it("marks every contribution anonymous with bounded fields", () => {
+    for (const item of SOLUTIONS_FIXTURE) {
+      expect(item.author_anonymous).toBe(true);
+      expect(item.text.length).toBeGreaterThanOrEqual(10);
+      expect(item.text.length).toBeLessThanOrEqual(500);
+      if (item.evidence_note) {
+        expect(item.evidence_note.length).toBeLessThanOrEqual(280);
+      }
+      if (item.author_label) {
+        expect(item.author_label.length).toBeLessThanOrEqual(60);
+      }
+    }
+  });
+
+  it("yields at least one solved and one open report via derivation", () => {
+    const statuses = new Set(
+      REPORTS_FIXTURE.map((report) =>
+        deriveReportStatus(report, [...SOLUTIONS_FIXTURE]),
+      ),
+    );
+    expect(statuses.has("solved")).toBe(true);
+    expect(statuses.has("open")).toBe(true);
   });
 });

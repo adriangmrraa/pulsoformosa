@@ -25,6 +25,8 @@ describe("DevMockBadge", () => {
           report={report}
           fixture
           sharePath={`/?reporte=${report.id}`}
+          status="open"
+          solutionCount={0}
         />,
       );
       expect(

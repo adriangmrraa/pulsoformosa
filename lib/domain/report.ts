@@ -34,6 +34,7 @@ export interface PublicReportCard extends PublicReportPoint {
 
 export interface PublicReport extends PublicReportCard {
   description: string; // full sanitized body
+  expected_solution: string | null;
   location_method: LocationMethod | null;
 }
 

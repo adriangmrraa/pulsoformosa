@@ -38,6 +38,7 @@ interface Seed {
   lon: number;
   lat: number;
   status?: EditorialStatus;
+  expectedSolution?: string;
 }
 
 const SEEDS: readonly Seed[] = [
@@ -81,6 +82,7 @@ const SEEDS: readonly Seed[] = [
     lon: -58.183,
     lat: -26.183,
     status: "VERIFIED_EDITORIALLY",
+    expectedSolution: "Rellenar y compactar el bache con material de mejoramiento.",
   },
   {
     id: "rpt_mock_7b9d31",
@@ -208,6 +210,7 @@ export const REPORTS_FIXTURE: readonly PublicReport[] = SEEDS.map((seed) => {
         : [],
     editorial_status: seed.status ?? "PUBLISHED_UNVERIFIED",
     description: `${seed.summary} Dato de prueba generado para desarrollo; no corresponde a un hecho real.`,
+    expected_solution: seed.expectedSolution ?? null,
     location_method: "manual_pin",
   } satisfies PublicReport;
 });

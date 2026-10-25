@@ -10,6 +10,7 @@ export const reportFormSchema = z.strictObject({
   category: z.enum(REPORT_CATEGORIES),
   subtype: z.string().max(80).optional(),
   description: z.string().min(15).max(800),
+  expected_solution: z.string().max(280).optional(),
   location: z.strictObject({
     lat: z.number().min(-90).max(90),
     lon: z.number().min(-180).max(180),

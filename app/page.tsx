@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReportListPage } from "@/lib/domain/types";
+import { deriveReportStatus, type Solution } from "@/lib/domain/solution";
 import { getReportsProvider } from "@/lib/providers";
 import {
   parseOverviewQuery,
@@ -70,10 +71,16 @@ export default async function HomePage({
   });
 
   let reportPage: ReportListPage = EMPTY_PAGE;
+  let solutions: Solution[] = [];
   try {
-    reportPage = await getReportsProvider().listReports(toReportQuery(query));
+    const provider = getReportsProvider();
+    reportPage = await provider.listReports(toReportQuery(query));
+    solutions = await provider.listSolutions(
+      reportPage.items.map((report) => report.id),
+    );
   } catch {
     reportPage = EMPTY_PAGE;
+    solutions = [];
   }
 
   const nextHref = reportPage.nextCursor
@@ -119,14 +126,21 @@ export default async function HomePage({
                 <EmptyState />
               </div>
             ) : (
-              reportPage.items.map((report) => (
-                <IncidentCard
-                  key={report.id}
-                  report={report}
-                  fixture
-                  sharePath={buildHref(query, { reporte: report.id })}
-                />
-              ))
+              reportPage.items.map((report) => {
+                const reportSolutions = solutions.filter(
+                  (item) => item.report_id === report.id,
+                );
+                return (
+                  <IncidentCard
+                    key={report.id}
+                    report={report}
+                    fixture
+                    sharePath={buildHref(query, { reporte: report.id })}
+                    status={deriveReportStatus(report, reportSolutions)}
+                    solutionCount={reportSolutions.length}
+                  />
+                );
+              })
             )}
           </div>
 
