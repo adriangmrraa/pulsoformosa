@@ -120,9 +120,8 @@ describe("data-bearing component states", () => {
       />,
     );
     expect(screen.getByText(QUICK_SUMMARY_TITLE)).toBeInTheDocument();
-    expect(screen.getByText(/Categoría predominante:/)).toHaveTextContent(
-      "Agua y anegamientos",
-    );
+    expect(screen.getByText("Agua y anegamientos")).toBeInTheDocument();
+    expect(screen.getByText("categoría predominante")).toBeInTheDocument();
   });
 
   it("renders an explicit empty state", () => {
