@@ -17,6 +17,8 @@ export const reportFormSchema = z.strictObject({
     method: z.enum(LOCATION_METHODS),
     accuracyM: z.number().positive().optional(),
   }),
+  /** Optional barrio/reference label, stored as the public approx_zone. */
+  zone_label: z.string().max(64).optional(),
   geometry_mode: z.enum(GEOMETRY_MODES).default("POINT"),
   consent: z.literal(true),
   idempotency_key: z.uuid(),

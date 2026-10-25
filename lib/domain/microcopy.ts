@@ -31,7 +31,6 @@ export const CONSENT_TEXT =
 
 // §6.5 confirmation set
 export const CONFIRMATION_TITLE = "Recibimos tu reporte";
-export const CONFIRMATION_STATUS = "En revisión";
 export const CONFIRMATION_BACK = "Volver al mapa";
 export const CONFIRMATION_DISCLAIMER =
   "Esto no es un servicio de emergencias ni una denuncia formal ante una autoridad.";
@@ -44,6 +43,7 @@ export const STATUS_OPEN = "Abierto";
 export const STATUS_SOLVED = "Resuelto";
 export const SOLUTIONS_TITLE = "Soluciones vecinales";
 export const SOLUTION_PENDING_LABEL = "pendiente de revisión";
+export const SOLUTION_APPROVED_LABEL = "aprobada";
 export const EXPECTED_SOLUTION_TITLE = "Solución esperada";
 export const SOLUTIONS_DATA_WARNING =
   "Aporte vecinal: no compartas datos personales de terceros en tu solución.";
@@ -85,7 +85,7 @@ export const OUTSIDE_REGION_ERROR =
 export const DESCRIPTION_WARNING =
   "No escribas nombres ni teléfonos de otras personas.";
 
-export const SUBMISSION_STUB_HINT =
+export const ANTIBOT_PLACEHOLDER_HINT =
   "Protección anti-bots: espacio reservado. En esta versión no se verifica ni bloquea el teclado.";
 
 export const CATEGORY_LABEL_BY_SLUG: Record<CategorySlug, string> = {

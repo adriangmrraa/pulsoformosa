@@ -1,6 +1,5 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { SOURCES_FIXTURE } from "@/tests/fixtures/sources.fixture";
 import {
   FIXTURE_REPORT_IDS,
   REPORTS_FIXTURE,
@@ -8,16 +7,6 @@ import {
 import { SOLUTIONS_FIXTURE } from "@/tests/fixtures/solutions.fixture";
 import { deriveReportStatus } from "@/lib/domain/solution";
 import { isInsideFormosaBBox } from "@/lib/domain/geo";
-
-describe("source fixtures", () => {
-  it("uses mock:// source URLs and captured_at markers", () => {
-    for (const source of SOURCES_FIXTURE) {
-      expect(source.url.startsWith("mock://")).toBe(true);
-      expect(source.methodology_url.startsWith("mock://")).toBe(true);
-      expect(source.captured_at).toMatch(/Z$/);
-    }
-  });
-});
 
 describe("report fixtures", () => {
   it("carry the §11.2 card fields", () => {

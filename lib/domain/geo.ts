@@ -41,3 +41,29 @@ export type BBox = {
   maxLon: number;
   maxLat: number;
 };
+
+/**
+ * Public geo-generalization step (~250 m). Applied at ingest so the private
+ * coordinate is never persisted — only the generalized one reaches storage
+ * and clients (spec §16.4: deterministic displacement inside a geo cell).
+ */
+export const GENERALIZATION_STEP_DEG = 0.0023;
+
+function snapToGrid(value: number, step: number): number {
+  return Math.round(value / step) * step;
+}
+
+/**
+ * Deterministically snaps a coordinate to the ~250 m public grid. Same input
+ * always yields the same output, so a point never jitter-discloses more than
+ * the grid cell it falls in.
+ */
+export function generalizeCoordinate(
+  lat: number,
+  lon: number,
+): { lat: number; lon: number } {
+  return {
+    lat: Number(snapToGrid(lat, GENERALIZATION_STEP_DEG).toFixed(6)),
+    lon: Number(snapToGrid(lon, GENERALIZATION_STEP_DEG).toFixed(6)),
+  };
+}

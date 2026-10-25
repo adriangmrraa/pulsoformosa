@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { DevMockBadge } from "@/components/ui/dev-mock-badge";
 import {
   CONFIRMATION_BACK,
   CONFIRMATION_DISCLAIMER,
-  CONFIRMATION_STATUS,
   CONFIRMATION_TITLE,
+  REPORT_PUBLIC_LINE,
 } from "@/lib/domain/microcopy";
 
 export type SubmissionState = "idle" | "submitting" | "received" | "error";
@@ -46,11 +45,8 @@ export function SubmissionFeedback({ state, publicId }: SubmissionFeedbackProps)
             Identificador público:{" "}
             <span className="tabular font-medium">{publicId}</span>
           </p>
-          <div className="mt-2">
-            <DevMockBadge label="Identificador simulado — mock de desarrollo" />
-          </div>
           <p className="mt-3 text-sm">
-            Situación: <strong>{CONFIRMATION_STATUS}</strong>
+            Situación: <strong>{REPORT_PUBLIC_LINE}</strong>
           </p>
           <p className="mt-2 text-xs text-text-secondary">
             {CONFIRMATION_DISCLAIMER}

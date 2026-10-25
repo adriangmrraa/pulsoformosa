@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import type { ReportListPage } from "@/lib/domain/types";
+import type { PublicReport } from "@/lib/domain/report";
 import { deriveReportStatus, type Solution } from "@/lib/domain/solution";
-import { getReportsProvider } from "@/lib/providers";
+import { getStore } from "@/lib/server/store";
 import {
   parseOverviewQuery,
   toReportQuery,
   type OverviewQuery,
 } from "@/lib/validation/query-params";
-import { SOURCES_FIXTURE } from "@/tests/fixtures/sources.fixture";
+import { PERIOD_LABELS } from "@/lib/domain/microcopy";
+import { ReportExplorer } from "@/components/home/report-explorer";
 import { FilterChips } from "@/components/home/filter-chips";
 import { TimeRangeSelector } from "@/components/home/time-range-selector";
-import { IncidentMap } from "@/components/map/incident-map";
 import { IncidentCard } from "@/components/reports/incident-card";
 import { Pagination } from "@/components/home/pagination";
 import { EmptyState } from "@/components/home/empty-state";
@@ -23,8 +24,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const CENTER: [number, number] = [-58.18, -26.18];
-const EMPTY_PAGE: ReportListPage = { items: [], nextCursor: null, pageSize: 0 };
+const EMPTY_PAGE: ReportListPage = {
+  items: [],
+  nextCursor: null,
+  pageSize: 0,
+  total: 0,
+};
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -71,15 +76,47 @@ export default async function HomePage({
   });
 
   let reportPage: ReportListPage = EMPTY_PAGE;
+  let selectionDataset: PublicReport[] = [];
   let solutions: Solution[] = [];
+  let resolvedReportId: string | undefined;
+  let fixture = false;
+
   try {
-    const provider = getReportsProvider();
-    reportPage = await provider.listReports(toReportQuery(query));
-    solutions = await provider.listSolutions(
-      reportPage.items.map((report) => report.id),
+    const store = await getStore();
+    fixture = store.backend === "json";
+    const reportQuery = toReportQuery(query);
+
+    // Paginated page feeds the list below the fold; the map/selection dataset
+    // asks for up to 50 rows without a cursor so pins cover the whole query.
+    const [page, mapDataset] = await Promise.all([
+      store.listReports(reportQuery),
+      store.listReports({ ...reportQuery, cursor: undefined, limit: 50 }),
+    ]);
+    reportPage = page;
+
+    // Deep link: resolves independently of the active filters. When the
+    // report is outside the filtered page it joins the selection dataset so
+    // pins, panel and URL keep pointing at one real report.
+    let deepLinked: PublicReport | null = null;
+    if (query.reporte) {
+      const resolved = await store.getReportById(query.reporte);
+      if (resolved) {
+        resolvedReportId = resolved.id;
+        if (!mapDataset.items.some((item) => item.id === resolved.id)) {
+          deepLinked = resolved;
+        }
+      }
+    }
+
+    selectionDataset = [...mapDataset.items, ...(deepLinked ? [deepLinked] : [])]
+      .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+
+    solutions = await store.listSolutions(
+      selectionDataset.map((report) => report.id),
     );
   } catch {
     reportPage = EMPTY_PAGE;
+    selectionDataset = [];
     solutions = [];
   }
 
@@ -90,29 +127,46 @@ export default async function HomePage({
   return (
     <>
       <HydrationMarker />
-      <div className="container-page py-6 pb-28 md:py-10">
-        <div className="max-w-4xl reveal-up">
-          <p className="mb-3 text-xs font-semibold tracking-[0.18em] text-accent-agua uppercase">
-            Pulso ciudadano · Formosa Capital
-          </p>
-          <h1 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+      <div className="container-page pt-5 md:pt-7">
+        <div className="max-w-4xl">
+          <h1 className="max-w-3xl text-3xl font-semibold leading-[1.05] tracking-tight sm:text-4xl">
             Esto se está reportando en Formosa
           </h1>
-          <p className="mt-4 max-w-2xl text-base text-text-secondary sm:text-lg">
-            Reportes de vecinos sobre un mapa de la ciudad. Los conteos son
-            reportes públicos, no personas afectadas.
+          <p className="mt-2 max-w-2xl text-sm text-text-secondary sm:text-base">
+            Reportes de vecinos sobre el mapa de la ciudad. Tocá un punto para
+            ver el detalle y las soluciones aportadas.
           </p>
         </div>
+      </div>
 
-        <div className="mt-6">
-          <IncidentMap reports={reportPage.items} center={CENTER} />
-        </div>
+      <div className="mt-4">
+        <ReportExplorer
+          reports={selectionDataset}
+          solutions={solutions}
+          initialReportId={resolvedReportId}
+          fixture={fixture}
+        />
+      </div>
 
-        <section id="lista-reportes" aria-labelledby="lista-reportes-title" className="mt-8">
+      <div className="container-page pb-28">
+        <section
+          id="lista-reportes"
+          aria-labelledby="lista-reportes-title"
+          className="mt-8"
+        >
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <h2 id="lista-reportes-title" className="text-2xl font-semibold tracking-tight">
-              Reportes recientes
-            </h2>
+            <div>
+              <h2
+                id="lista-reportes-title"
+                className="text-2xl font-semibold tracking-tight"
+              >
+                Reportes recientes
+              </h2>
+              <p className="mt-1 text-xs text-text-secondary">
+                {reportPage.total} reportes públicos en{" "}
+                {PERIOD_LABELS[query.periodo]}
+              </p>
+            </div>
             <TimeRangeSelector value={query.periodo} />
           </div>
 
@@ -128,13 +182,14 @@ export default async function HomePage({
             ) : (
               reportPage.items.map((report) => {
                 const reportSolutions = solutions.filter(
-                  (item) => item.report_id === report.id,
+                  (item) =>
+                    item.report_id === report.id && item.status !== "rejected",
                 );
                 return (
                   <IncidentCard
                     key={report.id}
                     report={report}
-                    fixture
+                    fixture={fixture}
                     sharePath={buildHref(query, { reporte: report.id })}
                     status={deriveReportStatus(report, reportSolutions)}
                     solutionCount={reportSolutions.length}
@@ -152,30 +207,13 @@ export default async function HomePage({
             Fuentes y metodología
           </h2>
           <p className="mt-2 max-w-prose text-sm text-text-secondary">
-            En esta iteración todas las fuentes son simuladas. Cada tarjeta
-            indica su origen y, cuando exista, el enlace para consultar al
-            organismo.
+            {fixture
+              ? "Los reportes marcados como dato de prueba son contenido de demostración persistido en el almacenamiento local de desarrollo."
+              : "Los reportes son aportes de vecinos publicados sin verificación editorial."}{" "}
+            La ubicación exacta nunca se publica: cada punto se muestra con una
+            aproximación de ~250&nbsp;m. Las soluciones vecinales pasan por
+            moderación antes de contar como resolución del reporte.
           </p>
-          <ul className="mt-3 space-y-1 text-xs text-text-secondary">
-            {SOURCES_FIXTURE.map((source) => (
-              <li key={source.key}>
-                {source.label} ·{" "}
-                <a
-                  href={source.url}
-                  className="underline underline-offset-2 hover:text-text"
-                >
-                  consultar fuente
-                </a>{" "}
-                ·{" "}
-                <a
-                  href={source.methodology_url}
-                  className="underline underline-offset-2 hover:text-text"
-                >
-                  metodología
-                </a>
-              </li>
-            ))}
-          </ul>
         </section>
       </div>
 

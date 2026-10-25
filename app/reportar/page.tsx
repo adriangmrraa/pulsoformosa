@@ -20,9 +20,9 @@ export default function ReportarPage() {
           {REPORT_FORM_TITLE}
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
-          Contanos qué pasa. Tu reporte queda en revisión antes de publicarse y
-          se muestra con una ubicación aproximada. No es un canal de
-          emergencias.
+          Contanos qué pasa. Tu reporte se publica como aporte vecinal no
+          verificado y se muestra con una ubicación aproximada. No es un canal
+          de emergencias.
         </p>
       </div>
 

@@ -18,6 +18,9 @@
 .env.*
 !.env.example
 
+# local JSON report store (real dev persistence, never committed)
+/data
+
 # misc
 .DS_Store
 *.pem

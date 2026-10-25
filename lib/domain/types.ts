@@ -18,4 +18,6 @@ export interface ReportListPage {
   items: PublicReport[];
   nextCursor: string | null;
   pageSize: number;
+  /** Total matching rows across every page — feeds the public count line. */
+  total: number;
 }

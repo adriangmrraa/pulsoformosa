@@ -1,17 +1,37 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ReportForm } from "@/components/reports/report-form";
 import { ImageUploader } from "@/components/reports/image-uploader";
+import { getStore, resetStoreForTests } from "@/lib/server/store";
+import { submitReportViaRoute } from "@/tests/helpers/real-handlers";
 import {
   CONFIRMATION_DISCLAIMER,
-  CONFIRMATION_STATUS,
   CONFIRMATION_TITLE,
+  REPORT_PUBLIC_LINE,
 } from "@/lib/domain/microcopy";
+
+let dataDir: string;
 
 beforeEach(() => {
   sessionStorage.clear();
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
+  // Real JSON store on disk — every submitted report persists via the actual
+  // POST /api/reportes handler (amendment: no fetch mocks, no stubbed seams).
+  dataDir = mkdtempSync(path.join(tmpdir(), "pulso-form-test-"));
+  vi.stubEnv("PULSO_DATA_DIR", dataDir);
+  vi.stubEnv("PULSO_SEED_DEMO", "0");
+  vi.stubEnv("PUBLIC_ENVIRONMENT_LABEL", "development");
+  delete process.env.DATABASE_URL;
+  resetStoreForTests();
+});
+
+afterEach(() => {
+  resetStoreForTests();
+  rmSync(dataDir, { recursive: true, force: true });
 });
 
 function pickCategory(name = "Agua y anegamientos") {
@@ -150,7 +170,7 @@ describe("ReportForm validation", () => {
   });
 
   it("submits successfully with the expected-solution field empty", async () => {
-    render(<ReportForm />);
+    render(<ReportForm submitReport={submitReportViaRoute} />);
     pickCategory();
     setDescription("Agua acumulada sobre la calle desde anoche.");
     setManualLocation();
@@ -163,9 +183,9 @@ describe("ReportForm validation", () => {
   });
 });
 
-describe("ReportForm fake submit", () => {
-  it("shows the §6.5 confirmation with a mock id", async () => {
-    render(<ReportForm />);
+describe("ReportForm real submit", () => {
+  it("shows the §6.5 confirmation with the persisted public id", async () => {
+    render(<ReportForm submitReport={submitReportViaRoute} />);
     pickCategory();
     setDescription("Agua acumulada sobre la calle desde anoche.");
     setManualLocation();
@@ -176,32 +196,55 @@ describe("ReportForm fake submit", () => {
     expect(
       await screen.findByText(CONFIRMATION_TITLE, {}, { timeout: 3000 }),
     ).toBeInTheDocument();
-    expect(screen.getByText(CONFIRMATION_STATUS)).toBeInTheDocument();
+    // Published immediately as an unverified citizen contribution.
+    expect(screen.getByText(REPORT_PUBLIC_LINE)).toBeInTheDocument();
     expect(screen.getByText(CONFIRMATION_DISCLAIMER)).toBeInTheDocument();
-    expect(screen.getByText(/pub_mock_/)).toBeInTheDocument();
+    expect(screen.getByText(/rpt_[0-9a-f]{10}/)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Volver al mapa" }),
     ).toBeInTheDocument();
   });
 
-  it("keeps the idempotency key in the submit payload", async () => {
+  it("stores the idempotency key so a retry can never duplicate the report", async () => {
     const key = "12345678-1234-4123-8123-123456789012";
     vi.spyOn(crypto, "randomUUID").mockReturnValue(key);
 
-    render(<ReportForm />);
+    render(<ReportForm submitReport={submitReportViaRoute} />);
     pickCategory();
     setDescription("Agua acumulada sobre la calle desde anoche.");
     setManualLocation();
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Enviar reporte" }));
 
-    expect(
-      await screen.findByText(/pub_mock_12345678/, {}, { timeout: 3000 }),
-    ).toBeInTheDocument();
+    const idNode = await screen.findByText(
+      /rpt_[0-9a-f]{10}/,
+      {},
+      { timeout: 3000 },
+    );
+    const publicId = idNode.textContent?.match(/rpt_[0-9a-f]{10}/)?.[0];
+    expect(publicId).toBeTruthy();
+
+    // A retry with the same key returns the original row — never a duplicate.
+    const retry = await submitReportViaRoute({
+      category: "WATER",
+      description: "Agua acumulada sobre la calle desde anoche.",
+      location: { lat: -26.18, lon: -58.18, method: "manual_pin" },
+      geometry_mode: "POINT",
+      consent: true,
+      idempotency_key: key,
+    });
+    expect(retry.publicId).toBe(publicId);
+
+    const store = await getStore();
+    const page = await store.listReports({
+      category: "ALL",
+      period: "30d",
+    });
+    expect(page.total).toBe(1);
   });
 
   it("guards against double submits", async () => {
-    render(<ReportForm />);
+    render(<ReportForm submitReport={submitReportViaRoute} />);
     pickCategory();
     setDescription("Agua acumulada sobre la calle desde anoche.");
     setManualLocation();

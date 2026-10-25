@@ -17,7 +17,7 @@ import {
   GEOMETRY_QUESTION,
   GEOMETRY_STREET,
   LOCATION_MARKED_BY_YOU,
-  SUBMISSION_STUB_HINT,
+  ANTIBOT_PLACEHOLDER_HINT,
   TURNSTILE_CONFIGURED,
   TURNSTILE_NOT_CONFIGURED,
 } from "@/lib/domain/microcopy";
@@ -56,12 +56,29 @@ const EMPTY_DRAFT: Draft = {
   barrio: "",
 };
 
-async function fakeSubmit(
+/**
+ * Real transport: POST /api/reportes. The payload — including the
+ * idempotency key — is persisted by the store; retries with the same key
+ * return the original report instead of duplicating it.
+ */
+async function postReport(
   payload: ReportFormInput,
 ): Promise<{ publicId: string }> {
-  await new Promise((resolve) => setTimeout(resolve, 600));
-  return { publicId: `pub_mock_${payload.idempotency_key.slice(0, 8)}` };
+  const response = await fetch("/api/reportes", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`report submit failed: ${response.status}`);
+  }
+  const data = (await response.json()) as { public_id?: string; id?: string };
+  const publicId = data.public_id ?? data.id;
+  if (!publicId) throw new Error("report submit failed: missing public id");
+  return { publicId };
 }
+
+export type SubmitReportFn = typeof postReport;
 
 function newKey(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -70,7 +87,12 @@ function newKey(): string {
   return `00000000-0000-4000-8000-${Date.now().toString().padStart(12, "0").slice(-12)}`;
 }
 
-export function ReportForm() {
+interface ReportFormProps {
+  /** Transport seam — defaults to the real POST; tests inject the route handler. */
+  submitReport?: SubmitReportFn;
+}
+
+export function ReportForm({ submitReport = postReport }: ReportFormProps) {
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [files, setFiles] = useState<File[]>([]);
   const [consent, setConsent] = useState(false);
@@ -162,6 +184,7 @@ export function ReportForm() {
         method: draft.method ?? "manual_pin",
         accuracyM,
       },
+      zone_label: draft.barrio.trim() ? draft.barrio : undefined,
       geometry_mode: geometryMode,
       consent: true as const,
       idempotency_key: key,
@@ -188,15 +211,18 @@ export function ReportForm() {
 
     setSubmission("submitting");
 
-    // Fake transport: the payload (including idempotency_key) is built and
-    // passed, but nothing persists and the fixture list never gains the report.
-    const result = await fakeSubmit(payload);
-    setPublicId(result.publicId);
-    setSubmission("received");
     try {
-      sessionStorage.removeItem(DRAFT_KEY);
+      const result = await submitReport(payload);
+      setPublicId(result.publicId);
+      setSubmission("received");
+      try {
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch {
+        // ignore
+      }
     } catch {
-      // ignore
+      // Real failure: the draft stays in this tab so the report is not lost.
+      setSubmission("error");
     }
   }
 
@@ -354,7 +380,7 @@ export function ReportForm() {
       </div>
 
       <div className="rounded-lg border border-dashed border-border bg-surface/40 p-3 text-[13px] text-text-secondary">
-        <p>{SUBMISSION_STUB_HINT}</p>
+        <p>{ANTIBOT_PLACEHOLDER_HINT}</p>
         <p className="mt-1">
           {turnstileSiteKey
             ? TURNSTILE_CONFIGURED

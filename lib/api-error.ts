@@ -13,6 +13,7 @@ export type ApiErrorCode =
   | "OUTSIDE_REGION"
   | "MEDIA_REJECTED"
   | "SOURCE_UNAVAILABLE"
+  | "UNAUTHORIZED"
   | "NOT_FOUND"
   | "INTERNAL_ERROR";
 
