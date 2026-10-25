@@ -30,8 +30,10 @@ const INIT_TIMEOUT_MS = 5_000;
 
 // Idempotent DDL matching lib/db/schema.ts — keeps a fresh DATABASE_URL
 // usable even when `db:migrate` has not run yet (drizzle/ holds the canonical
-// generated migration for managed environments).
-const ENSURE_SCHEMA_SQL = `
+// generated migration for managed environments). Executed one statement per
+// call: the neon-http driver rejects multi-command prepared statements.
+const ENSURE_SCHEMA_SQL = [
+  `
 CREATE TABLE IF NOT EXISTS reports (
   id TEXT PRIMARY KEY,
   submission_id TEXT UNIQUE,
@@ -51,6 +53,8 @@ CREATE TABLE IF NOT EXISTS reports (
   published_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+`,
+  `
 CREATE TABLE IF NOT EXISTS solutions (
   id TEXT PRIMARY KEY,
   report_id TEXT NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
@@ -70,7 +74,8 @@ CREATE TABLE IF NOT EXISTS moderation_events (
   reason TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-`;
+`,
+];
 
 function toStoredReport(row: ReportRow): StoredReport {
   return {
@@ -138,7 +143,9 @@ export class PgReportStore implements ReportStore {
         ),
       ),
     ]);
-    await sql.query(ENSURE_SCHEMA_SQL, []);
+    for (const statement of ENSURE_SCHEMA_SQL) {
+      await sql.query(statement, []);
+    }
   }
 
   async listReports(query: ReportQuery): Promise<ReportListPage> {
