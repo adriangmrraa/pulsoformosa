@@ -66,6 +66,8 @@ CREATE TABLE IF NOT EXISTS solutions (
   status TEXT NOT NULL DEFAULT 'pending',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+`,
+  `
 CREATE TABLE IF NOT EXISTS moderation_events (
   id TEXT PRIMARY KEY,
   solution_id TEXT NOT NULL REFERENCES solutions(id) ON DELETE CASCADE,
